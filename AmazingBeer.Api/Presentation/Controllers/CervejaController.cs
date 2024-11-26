@@ -1,6 +1,5 @@
 ﻿using AmazingBeer.Api.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 
 namespace AmazingBeer.Api.Presentation.Controllers
 {
@@ -29,14 +28,24 @@ namespace AmazingBeer.Api.Presentation.Controllers
         {
             var cervejas = await _cervejaService.RetornarCervejasAsync();
 
-            if(cervejas is null)
-            {
-                Log.Information ("Nenhuma cerveja encontrada!");
-                return NotFound();
-            }
-
-            Log.Information ("Cervejas retornadas com sucesso!" );
             return Ok(cervejas);
+        }
+
+        /// <summary>
+        /// Endpoint - Retorna uma cerveja por Id.
+        /// </summary>
+        /// <remarks>
+        /// Este endpoint retorna um objeto da cerveja pelo seu Id cadastrado.
+        /// </remarks>
+        /// <param name="id"></param>
+        /// <returns> Retorno de uma cerveja </returns>
+        [HttpGet]
+        [Route("RetornarCervejaPorId/{id}")]
+        public async Task<IActionResult> RetornarCervejaPorIdAsync(Guid id)
+        {
+            var cervejaId = await _cervejaService.RetornarCervejaIdAsync(id);
+
+            return Ok(cervejaId);
         }
     }
 }
