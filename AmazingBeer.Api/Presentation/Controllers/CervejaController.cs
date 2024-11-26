@@ -1,5 +1,6 @@
 ﻿using AmazingBeer.Api.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace AmazingBeer.Api.Presentation.Controllers
 {
@@ -28,6 +29,13 @@ namespace AmazingBeer.Api.Presentation.Controllers
         {
             var cervejas = await _cervejaService.RetornarCervejasAsync();
 
+            if(cervejas is null)
+            {
+                Log.Information ("Nenhuma cerveja encontrada!");
+                return NotFound();
+            }
+
+            Log.Information ("Cervejas retornadas com sucesso!" );
             return Ok(cervejas);
         }
     }
