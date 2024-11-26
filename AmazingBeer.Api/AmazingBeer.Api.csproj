@@ -7,6 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Application\Validations\**" />
+    <Compile Remove="Infraestructure\Middlewares\**" />
+    <Compile Remove="Infraestructure\Repositories\**" />
+    <Content Remove="Application\Validations\**" />
+    <Content Remove="Infraestructure\Middlewares\**" />
+    <Content Remove="Infraestructure\Repositories\**" />
+    <EmbeddedResource Remove="Application\Validations\**" />
+    <EmbeddedResource Remove="Infraestructure\Middlewares\**" />
+    <EmbeddedResource Remove="Infraestructure\Repositories\**" />
+    <None Remove="Application\Validations\**" />
+    <None Remove="Infraestructure\Middlewares\**" />
+    <None Remove="Infraestructure\Repositories\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
@@ -15,15 +30,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Application\Behaviors\Validations\" />
     <Folder Include="Application\Dtos\" />
-    <Folder Include="Application\Validations\" />
+    <Folder Include="Application\Interfaces\" />
+    <Folder Include="Application\Services\" />
     <Folder Include="Domain\Enums\" />
-    <Folder Include="Domain\Interfaces\Repositorys\" />
-    <Folder Include="Domain\Interfaces\Services\" />
-    <Folder Include="Domain\Services\" />
-    <Folder Include="Infraestructure\Middlewares\" />
+    <Folder Include="Domain\Interfaces\" />
+    <Folder Include="Domain\Events\" />
+    <Folder Include="Domain\Exceptions\" />
+    <Folder Include="Domain\ValueObjects\" />
+    <Folder Include="Infraestructure\Data\Context\" />
+    <Folder Include="Infraestructure\Data\Migrations\" />
+    <Folder Include="Infraestructure\Data\Repositories\" />
     <Folder Include="Infraestructure\Mappers\" />
-    <Folder Include="Infraestructure\Repositories\" />
+    <Folder Include="Infraestructure\IoC\" />
+    <Folder Include="Infraestructure\Logging\" />
+    <Folder Include="Infraestructure\Services\" />
+    <Folder Include="Presentation\Filters\" />
+    <Folder Include="Presentation\Middlewares\" />
+    <Folder Include="Presentation\Models\" />
   </ItemGroup>
 
 </Project>
