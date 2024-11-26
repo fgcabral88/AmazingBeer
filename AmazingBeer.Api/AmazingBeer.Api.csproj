@@ -35,7 +35,6 @@
 
   <ItemGroup>
     <Folder Include="Application\Behaviors\Validations\" />
-    <Folder Include="Application\Dtos\" />
     <Folder Include="Domain\Enums\" />
     <Folder Include="Domain\Events\" />
     <Folder Include="Domain\Exceptions\" />
