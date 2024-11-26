@@ -42,7 +42,6 @@
     <Folder Include="Domain\Events\" />
     <Folder Include="Domain\Exceptions\" />
     <Folder Include="Domain\ValueObjects\" />
-    <Folder Include="Infraestructure\Data\Context\" />
     <Folder Include="Infraestructure\Data\Migrations\" />
     <Folder Include="Infraestructure\Mappers\" />
     <Folder Include="Infraestructure\IoC\" />

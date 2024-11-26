@@ -1,6 +1,7 @@
 ﻿using AmazingBeer.Api.Application.Dtos.Cerveja;
 using AmazingBeer.Api.Application.Responses;
 using AmazingBeer.Api.Domain.Interfaces;
+using AmazingBeer.Api.Infraestructure.Data.Context;
 using Dapper;
 using System.Data;
 
@@ -8,19 +9,19 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
 {
     public class CervejaRepository : ICervejaRepository, IDisposable
     {
-        private readonly IDbConnection _dbConnection;
+        private readonly SqlDbContext _dbContext;
         private bool _disposed = false;
 
-        public CervejaRepository(IDbConnection dbConnection)
+        public CervejaRepository(SqlDbContext dbContext)
         {
-            _dbConnection = dbConnection;
+            _dbContext = dbContext;
         }
 
         public async Task<ResponseBase<IEnumerable<ListarCervejaDto>>> RetornarCervejasRepositorioAsync()
         {
             try
             {
-                using (var conexao = _dbConnection)
+                using (var conexao = _dbContext.CreateConnection())
                 {
                     if (conexao.State == ConnectionState.Closed)
                         conexao.Open();
@@ -43,9 +44,9 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
         {
             if (!_disposed)
             {
-                if (_dbConnection != null)
+                if (_dbContext != null)
                 {
-                    _dbConnection.Dispose();
+                    _dbContext.CreateConnection().Dispose();
                 }
 
                 _disposed = true;

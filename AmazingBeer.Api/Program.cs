@@ -1,6 +1,7 @@
 using AmazingBeer.Api.Application.Interfaces;
 using AmazingBeer.Api.Application.Services;
 using AmazingBeer.Api.Domain.Interfaces;
+using AmazingBeer.Api.Infraestructure.Data.Context;
 using AmazingBeer.Api.Infraestructure.Data.Repositories;
 using Microsoft.Data.SqlClient;
 using Microsoft.OpenApi.Models;
@@ -29,8 +30,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAutoMapper(typeof(Program));
 
 // Adiciona a string de conexão ao contêiner de serviços
-builder.Services.AddScoped<IDbConnection>(sp =>
-    new SqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<SqlDbContext>(sp =>
+    new SqlDbContext(builder.Configuration.GetConnectionString("DefaultConnection")!));
 
 // Registra seus repositórios e serviços
 builder.Services.AddScoped<ICervejaRepository, CervejaRepository>();
