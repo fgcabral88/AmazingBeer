@@ -1,0 +1,6 @@
+@AmazingBeer.Api_HostAddress = http://localhost:5032
+
+GET {{AmazingBeer.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
