@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AmazingBeer.Api.Controllers
+namespace AmazingBeer.Api.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AvaliacaoController : ControllerBase
+    public class CervejaController : ControllerBase
     {
     }
 }
