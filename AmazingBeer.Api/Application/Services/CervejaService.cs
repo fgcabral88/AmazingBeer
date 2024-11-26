@@ -27,11 +27,13 @@ namespace AmazingBeer.Api.Application.Services
                 var cervejasResponse = await _cervejaRepository.RetornarCervejasRepositorioAsync();
 
                 if (!cervejasResponse.Success)
+                {
                     return new ResponseBase<ListarCervejaDto>(success: false, message: cervejasResponse.Message, data: null);
+                }
 
-                var cervejasDto = _mapper.Map<IEnumerable<ListarCervejaDto>>(cervejasResponse.Data);
+                var cervejas = _mapper.Map<IEnumerable<ListarCervejaDto>>(cervejasResponse.Data);
 
-                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cervejas recuperadas com sucesso.", data: cervejasDto.First());
+                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cervejas retornada com sucesso.", data: cervejas.First());
             }
             catch(Exception ex)
             {
@@ -39,9 +41,25 @@ namespace AmazingBeer.Api.Application.Services
             }
         }
 
-        public Task<ResponseBase<ListarCervejaDto>> RetornarCervejaIdAsync(int Id)
+        public async Task<ResponseBase<ListarCervejaDto>> RetornarCervejaIdAsync(Guid Id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var cervejaIdResponse = await _cervejaRepository.RetornarCervejasIdRepositorioAsync(Id);
+
+                if (!cervejaIdResponse.Success)
+                {
+                    return new ResponseBase<ListarCervejaDto>(success: false, message: cervejaIdResponse.Message, data: null);
+                }
+
+                var cervejaId = _mapper.Map<ListarCervejaDto>(cervejaIdResponse.Data);
+
+                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja Id retornada com sucesso.", data: cervejaId);
+            }
+            catch (Exception ex)
+            {
+                return new ResponseBase<ListarCervejaDto>(success: false, message: ex.Message, data: null);
+            }
         }
 
         public Task<ResponseBase<ListarCervejaDto>> AdicionarCervejaAsync(CriarCervejaDto cervejaCriarDto)

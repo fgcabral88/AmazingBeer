@@ -30,5 +30,22 @@ namespace AmazingBeer.Api.Presentation.Controllers
 
             return Ok(cervejas);
         }
+
+        /// <summary>
+        /// Endpoint - Retorna uma cerveja por Id.
+        /// </summary>
+        /// <remarks>
+        /// Este endpoint retorna um objeto da cerveja pelo seu Id cadastrado.
+        /// </remarks>
+        /// <param name="id"></param>
+        /// <returns> Retorno de uma cerveja </returns>
+        [HttpGet]
+        [Route("RetornarCervejaPorId/{id}")]
+        public async Task<IActionResult> RetornarCervejaPorIdAsync(Guid id)
+        {
+            var cervejaId = await _cervejaService.RetornarCervejaIdAsync(id);
+
+            return Ok(cervejaId);
+        }
     }
 }

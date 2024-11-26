@@ -39,6 +39,27 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
             }
         }
 
+        public async Task<ResponseBase<ListarCervejaDto>> RetornarCervejasIdRepositorioAsync(Guid id)
+        {
+            try
+            {
+                using (var conexao = _dbContext.CreateConnection())
+                {
+                    if (conexao.State == ConnectionState.Closed)
+                        conexao.Open();
+
+                    const string query = "SELECT * FROM Cervejas WHERE Id = @Id";
+
+                    var cervejaId = await conexao.QueryFirstOrDefaultAsync<ListarCervejaDto>(query, new { Id = id });
+
+                    return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja recuperada com sucesso do banco de dados.", data: cervejaId);
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ResponseBase<ListarCervejaDto>(success: false, message: $"Erro em recuperar cerveja no banco de dados: {ex.Message}", data: null);
+            }
+        }
 
         public void Dispose()
         {

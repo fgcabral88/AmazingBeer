@@ -4,6 +4,7 @@ using AmazingBeer.Api.Domain.Interfaces;
 using AmazingBeer.Api.Infraestructure.Data.Context;
 using AmazingBeer.Api.Infraestructure.Data.Repositories;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +35,16 @@ builder.Services.AddScoped<SqlDbContext>(sp =>
 // Registra seus repositórios e serviços
 builder.Services.AddScoped<ICervejaRepository, CervejaRepository>();
 builder.Services.AddScoped<ICervejaService, CervejaService>();
+
+// Configurar o Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog(); // Usar Serilog
+
+// Adicionar serviços
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
