@@ -3,9 +3,7 @@ using AmazingBeer.Api.Application.Services;
 using AmazingBeer.Api.Domain.Interfaces;
 using AmazingBeer.Api.Infraestructure.Data.Context;
 using AmazingBeer.Api.Infraestructure.Data.Repositories;
-using Microsoft.Data.SqlClient;
 using Microsoft.OpenApi.Models;
-using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

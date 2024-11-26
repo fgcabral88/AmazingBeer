@@ -3,7 +3,6 @@ using AmazingBeer.Api.Application.Interfaces;
 using AmazingBeer.Api.Application.Responses;
 using AmazingBeer.Api.Domain.Interfaces;
 using AutoMapper;
-using System.Runtime.CompilerServices;
 
 namespace AmazingBeer.Api.Application.Services
 {
