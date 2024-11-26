@@ -6,6 +6,8 @@
         public bool Success { get; set; }
         public string Message { get; set; }
 
+        public ResponseBase() { }
+
         public ResponseBase(T data, bool success, string message)
         {
             Data = data;

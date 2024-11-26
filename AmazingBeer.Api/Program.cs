@@ -1,3 +1,11 @@
+using AmazingBeer.Api.Application.Interfaces;
+using AmazingBeer.Api.Application.Services;
+using AmazingBeer.Api.Domain.Interfaces;
+using AmazingBeer.Api.Infraestructure.Data.Repositories;
+using Microsoft.Data.SqlClient;
+using Microsoft.OpenApi.Models;
+using System.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
@@ -7,7 +15,26 @@ builder.AddServiceDefaults();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Amazing Beer",
+        Version = "v1",
+        Description = "Amazing Beer - Aspire 8",
+    });
+});
+
+// Registrando o AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
+
+// Adiciona a string de conexão ao contêiner de serviços
+builder.Services.AddScoped<IDbConnection>(sp =>
+    new SqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Registra seus repositórios e serviços
+builder.Services.AddScoped<ICervejaRepository, CervejaRepository>();
+builder.Services.AddScoped<ICervejaService, CervejaService>();
 
 var app = builder.Build();
 
@@ -17,7 +44,7 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
 }
 
 app.UseHttpsRedirection();
