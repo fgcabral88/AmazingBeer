@@ -48,9 +48,10 @@ namespace AmazingBeer.Api.Application.Services
                 var cervejaIdResponse = await _cervejaRepository.RetornarCervejasIdRepositorioAsync(Id);
 
                 if (!cervejaIdResponse.Success)
-                {
                     return new ResponseBase<ListarCervejaDto>(success: false, message: cervejaIdResponse.Message, data: null);
-                }
+
+                if (cervejaIdResponse.Data is null)
+                    return new ResponseBase<ListarCervejaDto>(success: false, message: "Cerveja não encontrada na base de dados.", data: null);
 
                 var cervejaId = _mapper.Map<ListarCervejaDto>(cervejaIdResponse.Data);
 

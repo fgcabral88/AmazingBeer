@@ -23,6 +23,8 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "Amazing Beer - Aspire 8",
     });
+
+    options.EnableAnnotations();
 });
 
 // Registrando o AutoMapper
