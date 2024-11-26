@@ -36,16 +36,12 @@
   <ItemGroup>
     <Folder Include="Application\Behaviors\Validations\" />
     <Folder Include="Application\Dtos\" />
-    <Folder Include="Application\Interfaces\" />
-    <Folder Include="Application\Services\" />
     <Folder Include="Domain\Enums\" />
-    <Folder Include="Domain\Interfaces\" />
     <Folder Include="Domain\Events\" />
     <Folder Include="Domain\Exceptions\" />
     <Folder Include="Domain\ValueObjects\" />
     <Folder Include="Infraestructure\Data\Context\" />
     <Folder Include="Infraestructure\Data\Migrations\" />
-    <Folder Include="Infraestructure\Data\Repositories\" />
     <Folder Include="Infraestructure\Mappers\" />
     <Folder Include="Infraestructure\IoC\" />
     <Folder Include="Infraestructure\Logging\" />
