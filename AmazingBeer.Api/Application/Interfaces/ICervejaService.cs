@@ -5,9 +5,9 @@ namespace AmazingBeer.Api.Application.Interfaces
 {
     public interface ICervejaService
     {
-        Task<ResponseBase<ListarCervejaDto>> RetornarCervejasAsync();
+        Task<ResponseBase<IEnumerable<ListarCervejaDto>>> RetornarCervejasAsync();
 
-        Task<ResponseBase<ListarCervejaDto>> RetornarCervejaIdAsync(Guid Id);
+        Task<ResponseBase<ListarCervejaDto>> RetornarCervejaIdAsync(Guid id);
 
         //Task<ResponseBase<ListarCervejaDto>> AdicionarCervejaAsync(CriarCervejaDto cervejaCriarDto);
 

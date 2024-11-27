@@ -3,6 +3,7 @@ using AmazingBeer.Api.Application.Interfaces;
 using AmazingBeer.Api.Application.Responses;
 using AmazingBeer.Api.Domain.Interfaces;
 using AutoMapper;
+using Serilog;
 
 namespace AmazingBeer.Api.Application.Services
 {
@@ -19,47 +20,58 @@ namespace AmazingBeer.Api.Application.Services
             _cervejaRepository = cervejaRepository;
         }
 
-
-        public async Task<ResponseBase<ListarCervejaDto>> RetornarCervejasAsync()
+        public async Task<ResponseBase<IEnumerable<ListarCervejaDto>>> RetornarCervejasAsync()
         {
             try
             {
+                // Busca os dados no repositório
                 var cervejasResponse = await _cervejaRepository.RetornarCervejasRepositorioAsync();
 
-                if (!cervejasResponse.Success)
+                // Verifica se a operação foi bem-sucedida
+                if (!cervejasResponse.Success || cervejasResponse.Data == null || !cervejasResponse.Data.Any())
                 {
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: cervejasResponse.Message, data: null);
+                    Log.Warning("Nenhuma cerveja encontrada na base de dados.");
+                    return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "Nenhuma cerveja encontrada.", data: null);
                 }
 
-                var cervejas = _mapper.Map<IEnumerable<ListarCervejaDto>>(cervejasResponse.Data);
+                // Mapeia os dados para o Dto
+                var cervejas = _mapper.Map<List<ListarCervejaDto>>(cervejasResponse.Data);
 
-                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cervejas retornada com sucesso.", data: cervejas.First());
-            }
-            catch(Exception ex)
-            {
-                return new ResponseBase<ListarCervejaDto>(success: false, message: ex.Message, data: null);
-            }
-        }
-
-        public async Task<ResponseBase<ListarCervejaDto>> RetornarCervejaIdAsync(Guid Id)
-        {
-            try
-            {
-                var cervejaIdResponse = await _cervejaRepository.RetornarCervejasIdRepositorioAsync(Id);
-
-                if (!cervejaIdResponse.Success)
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: cervejaIdResponse.Message, data: null);
-
-                if (cervejaIdResponse.Data is null)
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: "Cerveja não encontrada na base de dados.", data: null);
-
-                var cervejaId = _mapper.Map<ListarCervejaDto>(cervejaIdResponse.Data);
-
-                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja Id retornada com sucesso.", data: cervejaId);
+                Log.Information($"Cervejas retornadas com sucesso. Total: {cervejas.Count}");
+                return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: true, message: "Cervejas retornadas com sucesso.", data: cervejas);
             }
             catch (Exception ex)
             {
-                return new ResponseBase<ListarCervejaDto>(success: false, message: ex.Message, data: null);
+                Log.Error($"Erro ao tentar retornar as cervejas: {ex.Message}", ex);
+                return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "Ocorreu um erro ao processar sua solicitação.", data: null);
+            }
+        }
+
+        public async Task<ResponseBase<ListarCervejaDto>> RetornarCervejaIdAsync(Guid id)
+        {
+            try
+            {
+                // Busca a cerveja pelo Id no repositório
+                var cervejaIdResponse = await _cervejaRepository.RetornarCervejasIdRepositorioAsync(id);
+
+                // Verifica se a operação foi bem-sucedida e se há dados
+                if (!cervejaIdResponse.Success || cervejaIdResponse.Data == null)
+                {
+                    Log.Warning($"Cerveja com ID {id} não encontrada na base de dados.");
+                    return new ResponseBase<ListarCervejaDto>(success: false, message: "Cerveja não encontrada na base de dados.", data: null);
+                }
+
+                // Mapeia os dados para o Dto
+                var cervejaId = _mapper.Map<ListarCervejaDto>(cervejaIdResponse.Data);
+
+                Log.Information($"Cerveja com Id: {id} retornada com sucesso.");
+                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja retornada com sucesso.", data: cervejaId);
+            }
+            catch (Exception ex)
+            {
+                // Loga o erro com detalhes e retorna uma mensagem genérica
+                Log.Error($"Erro ao retornar a cerveja com Id: {id}: {ex.Message}", ex);
+                return new ResponseBase<ListarCervejaDto>(success: false, message: "Ocorreu um erro ao processar a solicitação.", data: null);
             }
         }
 
