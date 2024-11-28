@@ -5,7 +5,6 @@ using AmazingBeer.Api.Infraestructure.Data.Context;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Serilog;
-using System.Data;
 
 namespace AmazingBeer.Api.Infraestructure.Data.Repositories
 {
@@ -23,25 +22,37 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
         {
             try
             {
+                // Consulta todas as cervejas:
                 const string query = "SELECT * FROM Cervejas";
 
+                // Abre a conexão com o banco de dados:
                 using var conexao = _dbContext.CreateConnection();
                 conexao.Open();
 
+                // Recupera todas as cervejas no banco de dados:
                 var cervejas = await conexao.QueryAsync<ListarCervejaDto>(query);
 
+                // Valida se as cervejas foram encontradas:
                 if (!cervejas.Any())
                 {
-                    Log.Warning("Nenhuma cerveja encontrada no banco de dados.");
-                    return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "Nenhuma cerveja encontrada no banco de dados.", data: null);
+                    Log.Warning("REPOSITORIO: NAO foram encontradas cervejas cadastradas no banco de dados.");
+                    return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "NÃO foram encontradas cervejas cadastradas no banco de dados.", data: null);
                 }
 
-                Log.Information($"Cervejas recuperadas com sucesso. Total: {cervejas.Count()}");
+                // Retorna as cervejas recuperadas para a Service:
+                Log.Information($"REPOSITORIO: Cervejas recuperadas com sucesso. Total: {cervejas.Count()}");
                 return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: true, message: "Cervejas recuperadas com sucesso do banco de dados.", data: cervejas);
+            }
+            catch (SqlException ex)
+            {
+                // Erro ao acessar o banco de dados:
+                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados. Detalhes: {ex.Message}", ex);
+                return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "Erro ao acessar o banco de dados. Tente novamente mais tarde.", data: null);
             }
             catch (Exception ex)
             {
-                Log.Error($"Erro ao recuperar cervejas do banco de dados: {ex.Message}", ex);
+                // Erro inesperado:
+                Log.Error($"REPOSITORIO: Erro ao recuperar cervejas do banco de dados: {ex.Message}", ex);
                 return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "Ocorreu um erro ao recuperar as cervejas do banco de dados.", data: null);
             }
         }
@@ -67,7 +78,7 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                     return new ResponseBase<ListarCervejaDto>(success: false, message: $"Cerveja com Id {id} NÃO encontrada no banco de dados.", data: null);
                 }
 
-                // Retorna a cerveja recuperada:
+                // Retorna a cerveja recuperada para a Service:
                 Log.Information($"REPOSITORIO: Cerveja com Id {id} recuperada com sucesso do banco de dados.");
                 return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja recuperada com sucesso.", data: cerveja);
             }

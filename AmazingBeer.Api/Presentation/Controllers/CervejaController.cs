@@ -33,7 +33,7 @@ namespace AmazingBeer.Api.Presentation.Controllers
 
             if (!response.Success)
             {
-                if (response.Data == null)
+                if (response.Data is null)
                     return NotFound(response.Message);
 
                 return BadRequest(response.Message);
