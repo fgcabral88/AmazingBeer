@@ -8,5 +8,7 @@ namespace AmazingBeer.Api.Domain.Interfaces
         Task<ResponseBase<IEnumerable<ListarCervejaDto>>> RetornarCervejasRepositorioAsync();
 
         Task<ResponseBase<ListarCervejaDto>> RetornarCervejasIdRepositorioAsync(Guid id);
+
+        Task<ResponseBase<List<ListarCervejaDto>>> AdicionarCervejaRepositorioAsync(CriarCervejaDto criarCervejaDto);
     }
 }

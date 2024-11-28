@@ -1,18 +1,38 @@
-﻿using AmazingBeer.Api.Domain.Entitys;
+﻿using System.Text.Json.Serialization;
 
 namespace AmazingBeer.Api.Application.Dtos.Cerveja
 {
     public class EditarCervejaDto : BaseDto
     {
-        public string Nome { get; set; }
-        public string Estilo { get; set; } // Ex: IPA, Lager, Stout
-        public double TeorAlcoolico { get; set; } // Em porcentagem
-        public string Descricao { get; set; }
-        public decimal Preco { get; set; } // Preço por unidade
-        public int VolumeML { get; set; } // Volume em mililitros
-        public Guid FabricanteId { get; set; }
-        public FabricanteEntity Fabricante { get; set; }
-        public List<CervejaIngredienteEntity> Ingredientes { get; set; }
-        public UsuarioEntity Usuario { get; set; } // Criador ou responsável pela cerveja
+        [JsonRequired]
+        [JsonPropertyName("Nome da Cerveja")]
+        public required string Nome { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("Estilo da Cerveja")]
+        public required string Estilo { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("Teor Alcoólico")]
+        public required double TeorAlcoolico { get; set; }
+
+        [JsonPropertyName("Descrição da Cerveja")]
+        public string? Descricao { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("Preço da Cerveja")]
+        public required decimal Preco { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("Volume em Mililitros")]
+        public required int VolumeML { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("Identificador do Fabricante")]
+        public required Guid FabricanteId { get; set; }
+
+        [JsonRequired]
+        [JsonPropertyName("Identificador do Usuário")]
+        public required Guid UsuarioId { get; set; } 
     }
 }
