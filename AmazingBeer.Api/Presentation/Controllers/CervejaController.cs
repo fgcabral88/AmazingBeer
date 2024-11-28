@@ -42,7 +42,6 @@ namespace AmazingBeer.Api.Presentation.Controllers
             return Ok(response.Data);
         }
 
-
         /// <summary>
         /// Obtém uma cerveja pelo seu Id.
         /// </summary>
@@ -56,16 +55,41 @@ namespace AmazingBeer.Api.Presentation.Controllers
         public async Task<IActionResult> RetornarCervejaPorIdAsync(Guid id)
         {
             if (id == Guid.Empty)
-            {
                 return BadRequest("O Id informado é inválido.");
-            }
 
             var response = await _cervejaService.RetornarCervejaIdAsync(id);
 
             if (!response.Success)
             {
-                if (response.Data == null)
+                if (response.Data is null)
                     return NotFound(response.Message);
+
+                return BadRequest(response.Message);
+            }
+
+            return Ok(response.Data);
+        }
+
+        /// <summary>
+        /// Cadastra uma nova cerveja.
+        /// </summary>
+        /// <param name="criarCervejaDto"></param>
+        /// <returns> Cadastrar uma nova cerveja. </returns>
+        [HttpPost]
+        [Route("CadastrarCerveja")]
+        [SwaggerOperation(Summary = "Cadastrar uma nova cerveja.", Description = "Cadastra uma nova cerveja no sistema.")]
+        [SwaggerResponse(200, "Cerveja cadastrada com sucesso.", typeof(ListarCervejaDto))]
+        [SwaggerResponse(400, "Ocorreu um erro durante o processamento.")]
+        [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
+        [SwaggerResponse(409, "Cerveja já cadastrada no sistema.")]
+        public async Task<IActionResult> AdicionarCervejaAsync([FromBody] CriarCervejaDto criarCervejaDto)
+        {
+            var response = await _cervejaService.AdicionarCervejaAsync(criarCervejaDto);
+
+            if (!response.Success)
+            {
+                if (response.Message.Contains("já cadastrada", StringComparison.OrdinalIgnoreCase))
+                    return Conflict(response.Message);
 
                 return BadRequest(response.Message);
             }

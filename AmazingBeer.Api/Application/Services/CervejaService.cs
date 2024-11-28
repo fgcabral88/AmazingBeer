@@ -51,33 +51,69 @@ namespace AmazingBeer.Api.Application.Services
         {
             try
             {
-                // Busca a cerveja pelo Id no repositório
+                // Busca a cerveja pelo Id no repositório:
                 var cervejaIdResponse = await _cervejaRepository.RetornarCervejasIdRepositorioAsync(id);
 
-                // Verifica se a operação foi bem-sucedida e se há dados
-                if (!cervejaIdResponse.Success || cervejaIdResponse.Data == null)
+                // Verifica se a operação foi bem-sucedida e se há dados:
+                if (!cervejaIdResponse.Success || cervejaIdResponse.Data is null)
                 {
-                    Log.Warning($"Cerveja com ID {id} não encontrada na base de dados.");
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: "Cerveja não encontrada na base de dados.", data: null);
+                    Log.Warning($"SERVICE: Cerveja com ID {id} NAO encontrada na base de dados.");
+                    return new ResponseBase<ListarCervejaDto>(success: false, message: "Cerveja NÃO encontrada na base de dados.", data: null);
                 }
 
-                // Mapeia os dados para o Dto
+                // Mapeia os dados para o Dto:
                 var cervejaId = _mapper.Map<ListarCervejaDto>(cervejaIdResponse.Data);
 
-                Log.Information($"Cerveja com Id: {id} retornada com sucesso.");
+                // Retorna a cerveja para a Controller:
+                Log.Information($"SERVICE: Cerveja com Id: {id} retornada com sucesso.");
                 return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja retornada com sucesso.", data: cervejaId);
             }
             catch (Exception ex)
             {
-                // Loga o erro com detalhes e retorna uma mensagem genérica
-                Log.Error($"Erro ao retornar a cerveja com Id: {id}: {ex.Message}", ex);
+                // Loga o erro com detalhes e retorna uma mensagem genérica:
+                Log.Error($"SERVICE: Erro ao retornar a cerveja com Id: {id}: {ex.Message}", ex);
                 return new ResponseBase<ListarCervejaDto>(success: false, message: "Ocorreu um erro ao processar a solicitação.", data: null);
             }
         }
 
-        public Task<ResponseBase<ListarCervejaDto>> AdicionarCervejaAsync(CriarCervejaDto cervejaCriarDto)
+        public async Task<ResponseBase<ListarCervejaDto>> AdicionarCervejaAsync(CriarCervejaDto cervejaCriarDto)
         {
-            throw new NotImplementedException();
+            // Validação inicial dos dados recebidos
+            if (cervejaCriarDto == null)
+            {
+                Log.Warning("Dados da cerveja não podem ser nulos.");
+                return new ResponseBase<ListarCervejaDto>(success: false, message: "Dados da cerveja não podem ser nulos.", data: null);
+            }
+
+            try
+            {
+                // Chamada ao repositório para adicionar a cerveja
+                var adicionarResponse = await _cervejaRepository.AdicionarCervejaRepositorioAsync(cervejaCriarDto);
+
+                // Verificando o retorno do repositório
+                if (!adicionarResponse.Success)
+                {
+                    Log.Warning("Erro no retorno do repositório.");
+                    return new ResponseBase<ListarCervejaDto>(success: false, message: adicionarResponse.Message, data: null);
+                }
+
+                // Retornando apenas o primeiro item cadastrado (ajuste conforme a lógica do repositório)
+                var cervejaAdicionada = adicionarResponse.Data.FirstOrDefault();
+
+                if (cervejaAdicionada == null)
+                {
+                    Log.Warning("Falha ao recuperar a cerveja recém-cadastrada.");
+                    return new ResponseBase<ListarCervejaDto>(success: false, message: "Falha ao recuperar a cerveja recém-cadastrada.", data: null);
+                }
+
+                Log.Information("Cerveja adicionada com sucesso.");
+                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja adicionada com sucesso.", data: cervejaAdicionada);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Erro ao adicionar cerveja: {ex.Message}", ex);
+                return new ResponseBase<ListarCervejaDto>(success: false, message: "Erro inesperado ao adicionar a cerveja.", data: null);
+            }
         }
 
         public Task<ResponseBase<ListarCervejaDto>> EditarCervejaAsync(EditarCervejaDto cervejaEditarDto)
