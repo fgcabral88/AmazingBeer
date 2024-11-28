@@ -80,40 +80,43 @@ namespace AmazingBeer.Api.Application.Services
 
         public async Task<ResponseBase<ListarCervejaDto>> AdicionarCervejaAsync(CriarCervejaDto cervejaCriarDto)
         {
-            // Validação inicial dos dados recebidos
-            if (cervejaCriarDto == null)
+            // Validação inicial dos dados recebidos:
+            if (cervejaCriarDto is null)
             {
-                Log.Warning("Dados da cerveja não podem ser nulos.");
-                return new ResponseBase<ListarCervejaDto>(success: false, message: "Dados da cerveja não podem ser nulos.", data: null);
+                Log.Warning("SERVICE: Os dados da cerveja não podem ser nulos.");
+                return new ResponseBase<ListarCervejaDto>(success: false, message: "OS dados da cerveja não podem ser nulos.", data: null);
             }
 
             try
             {
-                // Chamada ao repositório para adicionar a cerveja
+                // Chamada ao repositório para adicionar a cerveja:
                 var adicionarResponse = await _cervejaRepository.AdicionarCervejaRepositorioAsync(cervejaCriarDto);
 
-                // Verificando o retorno do repositório
+                // Verifica o retorno do repositório:
                 if (!adicionarResponse.Success)
                 {
-                    Log.Warning("Erro no retorno do repositório.");
+                    Log.Warning("SERVICE: Erro no retorno do repositório.");
                     return new ResponseBase<ListarCervejaDto>(success: false, message: adicionarResponse.Message, data: null);
                 }
 
-                // Retornando apenas o primeiro item cadastrado (ajuste conforme a lógica do repositório)
-                var cervejaAdicionada = adicionarResponse.Data.FirstOrDefault();
+                // Recupera a cerveja adicionada:
+                var cervejaAdicionada = adicionarResponse.Data?.FirstOrDefault();
 
-                if (cervejaAdicionada == null)
+                // Verifica se a cerveja foi adicionada:
+                if (cervejaAdicionada is null)
                 {
-                    Log.Warning("Falha ao recuperar a cerveja recém-cadastrada.");
+                    Log.Warning("SERVICE: Falha ao recuperar a cerveja recém-cadastrada.");
                     return new ResponseBase<ListarCervejaDto>(success: false, message: "Falha ao recuperar a cerveja recém-cadastrada.", data: null);
                 }
 
-                Log.Information("Cerveja adicionada com sucesso.");
+                // Retorna a cerveja para a Controller:
+                Log.Information("SERVICE: Cerveja adicionada com sucesso.");
                 return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja adicionada com sucesso.", data: cervejaAdicionada);
             }
             catch (Exception ex)
             {
-                Log.Error($"Erro ao adicionar cerveja: {ex.Message}", ex);
+                // Loga o erro com detalhes e retorna uma mensagem genérica:
+                Log.Error($"SERVICE: Erro ao adicionar cerveja: {ex.Message}", ex);
                 return new ResponseBase<ListarCervejaDto>(success: false, message: "Erro inesperado ao adicionar a cerveja.", data: null);
             }
         }

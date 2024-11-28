@@ -97,42 +97,54 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
         }
 
         public async Task<ResponseBase<List<ListarCervejaDto>>> AdicionarCervejaRepositorioAsync(CriarCervejaDto criarCervejaDto)
-        {            
-            const string query = @"INSERT INTO Cervejas (Id, Nome, Estilo, TeorAlcoolico, Descricao, Preco, VolumeML, FabricanteId, UsuarioId) 
-               VALUES (@Id, @Nome, @Estilo, @TeorAlcoolico, @Descricao, @Preco, @VolumeML, @FabricanteId, @UsuarioId)";
+        {
+            // Cadastra a cerveja no banco de dados:
+            const string query = @"INSERT INTO Cervejas (Nome, Estilo, TeorAlcoolico, Descricao, Preco, VolumeML, FabricanteId, UsuarioId) OUTPUT INSERTED.Id
+                 VALUES (@Nome, @Estilo, @TeorAlcoolico, @Descricao, @Preco, @VolumeML, @FabricanteId, @UsuarioId);";
 
             try
             {
+                // Abre conexão com o banco de dados:
                 using var conexao = _dbContext.CreateConnection();
                 conexao.Open();
 
+                // Inicia uma transação:
                 using var transacao = conexao.BeginTransaction();
-                var cervejaAdicionar = await conexao.ExecuteScalarAsync<int>(query, criarCervejaDto, transaction: transacao);
 
-                if (cervejaAdicionar == 0)
+                // Retorna o Id recém-inserido:
+                var cervejaId = await conexao.ExecuteScalarAsync<Guid>(query, criarCervejaDto, transaction: transacao);
+
+                // Valida se a cerveja foi adicionada ao banco de dados:
+                if (cervejaId == Guid.Empty)
                 {
                     transacao.Rollback();
-                    return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Nenhuma cerveja foi adicionada", data: null);
+
+                    Log.Warning("REPOSITORIO: Nenhuma cerveja foi adicionada ao banco de dados.");
+                    return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Nenhuma cerveja foi adicionada.", data: null);
                 }
 
-                // Consulta a cerveja recém-inserida
-                const string querySelect = @"SELECT Id, Nome, Estilo, TeorAlcoolico, Descricao, Preco, VolumeML, FabricanteId, UsuarioId 
-                                     FROM Cervejas WHERE Id = @Id";
+                // Consulta a cerveja recém-inserida:
+                const string querySelect = @"SELECT Id, Nome, Estilo, TeorAlcoolico, Descricao, Preco, VolumeML, FabricanteId, UsuarioId FROM Cervejas WHERE Id = @Id";
 
-                var cervejas = (await conexao.QueryAsync<ListarCervejaDto>(querySelect, new { Id = cervejaAdicionar }, transaction: transacao)).ToList();
+                // Recupera a cerveja no banco de dados:
+                var cervejas = (await conexao.QueryAsync<ListarCervejaDto>(querySelect, new { Id = cervejaId }, transaction: transacao)).ToList();
 
+                // Confirma se a cerveja foi encontrada:
                 transacao.Commit();
 
+                // Retorna a cerveja recuperada para a Service:
                 return new ResponseBase<List<ListarCervejaDto>>(success: true, message: "Cerveja cadastrada com sucesso.", data: cervejas);
             }
             catch (SqlException ex)
             {
-                Log.Error($"Erro ao acessar o banco de dados: {ex.Message}", ex);
-                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: $"Erro ao acessar o banco de dados.", data: null);
+                // Erro ao acessar o banco de dados:
+                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados: {ex.Message}", ex);
+                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro ao acessar o banco de dados.", data: null);
             }
             catch (Exception ex)
             {
-                Log.Error($"Erro inesperado: {ex.Message}", ex);
+                // Erro inesperado:
+                Log.Error($"REPOSITORIO: Erro inesperado: {ex.Message}", ex);
                 return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro inesperado.", data: null);
             }
         }

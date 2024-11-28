@@ -4,7 +4,9 @@ namespace AmazingBeer.Api.Application.Dtos
 {
     public class BaseDto
     {
+        [JsonRequired]
         [JsonPropertyOrder(1)]
-        public Guid Id { get; set; }
+        [JsonPropertyName("Identificador da Cerveja")]
+        public required Guid Id { get; set; }
     }
 }

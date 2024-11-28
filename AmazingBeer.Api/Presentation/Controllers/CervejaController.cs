@@ -18,12 +18,12 @@ namespace AmazingBeer.Api.Presentation.Controllers
         }
 
         /// <summary>
-        /// Obtém uma lista de cervejas.
+        /// Retorna uma lista de cervejas cadastradas no banco de dados.
         /// </summary>
         /// <returns> Uma lista de cervejas disponíveis. </returns>
         [HttpGet]
         [Route("RetornarCervejas")]
-        [SwaggerOperation(Summary = "Obter todas as cervejas.", Description = "Retorna uma lista com todas as cervejas disponíveis no sistema.")]
+        [SwaggerOperation(Summary = "Retornar todas as cervejas.", Description = "Retorna uma lista com todas as cervejas disponíveis no sistema.")]
         [SwaggerResponse(200, "Lista de cervejas retornada com sucesso.", typeof(IEnumerable<ListarCervejaDto>))]
         [SwaggerResponse(404, "Nenhuma cerveja encontrada.")]
         [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
@@ -43,12 +43,12 @@ namespace AmazingBeer.Api.Presentation.Controllers
         }
 
         /// <summary>
-        /// Obtém uma cerveja pelo seu Id.
+        /// Retorna uma cerveja pelo seu Id cadastrado no banco de dados.
         /// </summary>
         /// <returns> Uma cerveja pelo seus Id. </returns>
         [HttpGet]
         [Route("RetornarCervejaPorId/{id}")]
-        [SwaggerOperation(Summary = "Obter uma cerveja pelo seu Id.", Description = "Retorna uma cerveja pelo seu Id informado no parâmetro do endpoint.")]
+        [SwaggerOperation(Summary = "Retornar uma cerveja pelo seu Id.", Description = "Retorna uma cerveja pelo seu Id informado no parâmetro do endpoint.")]
         [SwaggerResponse(200, "Cerveja retornada com sucesso.", typeof(ListarCervejaDto))]
         [SwaggerResponse(404, "Nenhuma cerveja encontrada pelo Id informado.")]
         [SwaggerResponse(400, "Id informado é inválido ou ocorreu um erro durante o processamento.")]
@@ -71,7 +71,7 @@ namespace AmazingBeer.Api.Presentation.Controllers
         }
 
         /// <summary>
-        /// Cadastra uma nova cerveja.
+        /// Cadastra uma nova cerveja no banco de dados.
         /// </summary>
         /// <param name="criarCervejaDto"></param>
         /// <returns> Cadastrar uma nova cerveja. </returns>
@@ -88,7 +88,7 @@ namespace AmazingBeer.Api.Presentation.Controllers
 
             if (!response.Success)
             {
-                if (response.Message.Contains("já cadastrada", StringComparison.OrdinalIgnoreCase))
+                if (response.Message.Contains("Cerveja já cadastrada.", StringComparison.OrdinalIgnoreCase))
                     return Conflict(response.Message);
 
                 return BadRequest(response.Message);
