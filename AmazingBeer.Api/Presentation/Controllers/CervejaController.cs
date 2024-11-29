@@ -79,9 +79,9 @@ namespace AmazingBeer.Api.Presentation.Controllers
         [Route("CadastrarCerveja")]
         [SwaggerOperation(Summary = "Cadastrar uma nova cerveja.", Description = "Cadastra uma nova cerveja no sistema.")]
         [SwaggerResponse(200, "Cerveja cadastrada com sucesso.", typeof(ListarCervejaDto))]
+        [SwaggerResponse(409, "Cerveja já cadastrada no sistema.")]
         [SwaggerResponse(400, "Ocorreu um erro durante o processamento.")]
         [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
-        [SwaggerResponse(409, "Cerveja já cadastrada no sistema.")]
         public async Task<IActionResult> AdicionarCervejaAsync([FromBody] CriarCervejaDto criarCervejaDto)
         {
             var response = await _cervejaService.AdicionarCervejaAsync(criarCervejaDto);
@@ -97,5 +97,31 @@ namespace AmazingBeer.Api.Presentation.Controllers
             return Ok(response.Data);
         }
 
+        /// <summary>
+        /// Edita uma cerveja pelo seu Id cadastrado no banco de dados.
+        /// </summary>
+        /// <param name="editarCervejaDto"></param>
+        /// <returns> Editar uma cerveja. </returns>
+        [HttpPut]
+        [Route("EditarCerveja")]
+        [SwaggerOperation(Summary = "Editar uma cerveja.", Description = "Edita uma cerveja pelo seu Id informado no parâmetro do endpoint.")]
+        [SwaggerResponse(200, "Cerveja editada com sucesso.", typeof(ListarCervejaDto))]
+        [SwaggerResponse(404, "Nenhuma cerveja encontrada pelo Id informado.")]
+        [SwaggerResponse(400, "Ocorreu um erro durante o processamento.")]
+        [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
+        public async Task<IActionResult> EditarCervejaAsync([FromBody] EditarCervejaDto editarCervejaDto)
+        {
+            var response = await _cervejaService.EditarCervejaAsync(editarCervejaDto);
+
+            if (!response.Success)
+            {
+                if (response.Data is null)
+                    return NotFound(response.Message);
+
+                return BadRequest(response.Data);
+            }
+
+            return Ok(response.Data);
+        }
     }
 }
