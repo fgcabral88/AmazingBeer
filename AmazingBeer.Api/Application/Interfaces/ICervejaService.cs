@@ -11,7 +11,7 @@ namespace AmazingBeer.Api.Application.Interfaces
 
         Task<ResponseBase<ListarCervejaDto>> AdicionarCervejaAsync(CriarCervejaDto cervejaCriarDto);
 
-        //Task<ResponseBase<ListarCervejaDto>> EditarCervejaAsync(EditarCervejaDto cervejaEditarDto);
+        Task<ResponseBase<ListarCervejaDto>> EditarCervejaAsync(EditarCervejaDto cervejaEditarDto);
 
         //Task<ResponseBase<ListarCervejaDto>> DeletarCervejaAsync(Guid Id);
     }

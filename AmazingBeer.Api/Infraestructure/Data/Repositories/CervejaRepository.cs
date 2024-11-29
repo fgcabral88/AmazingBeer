@@ -149,6 +149,50 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
             }
         }
 
+        public async Task<ResponseBase<List<ListarCervejaDto>>> EditarCervejaRepositorioAsync(EditarCervejaDto editarCervejaDto)
+        {
+            try
+            {
+                // Query para atualizar a cerveja
+                const string query = @"UPDATE Cervejas SET Nome = @Nome, Estilo = @Estilo, TeorAlcoolico = @TeorAlcoolico, Descricao = @Descricao, Preco = @Preco, 
+                                   VolumeML = @VolumeML, FabricanteId = @FabricanteId, UsuarioId = @UsuarioId WHERE Id = @Id; SELECT * FROM Cervejas WHERE Id = @Id;";
+
+                // Abre conexão com o banco de dados
+                using var conexao = _dbContext.CreateConnection();
+                conexao.Open();
+
+                // Inicia uma transação
+                using var transacao = conexao.BeginTransaction();
+
+                // Executa a query de atualização e retorna a cerveja editada
+                var cervejas = await conexao.QueryAsync<ListarCervejaDto>(query, editarCervejaDto, transaction: transacao);
+
+                // Verifica se a cerveja foi encontrada
+                if (!cervejas.Any())
+                {
+                    transacao.Rollback();
+
+                    Log.Warning("REPOSITORIO: Nenhuma cerveja foi editada.");
+                    return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Nenhuma cerveja foi editada.", data: null);
+                }
+
+                // Confirma a transação
+                transacao.Commit();
+
+                Log.Information("REPOSITORIO: Cerveja editada com sucesso.");
+                return new ResponseBase<List<ListarCervejaDto>>(success: true, message: "Cerveja editada com sucesso.", data: cervejas.ToList());
+            }
+            catch (SqlException ex)
+            {
+                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados: {ex.Message}", ex);
+                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro ao acessar o banco de dados.", data: null);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"REPOSITORIO: Erro inesperado: {ex.Message}", ex);
+                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro inesperado.", data: null);
+            }
+        }
         public void Dispose()
         {
             if (!_disposed)
