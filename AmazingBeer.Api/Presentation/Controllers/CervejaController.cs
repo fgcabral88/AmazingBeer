@@ -1,5 +1,6 @@
 ﻿using AmazingBeer.Api.Application.Dtos.Cerveja;
 using AmazingBeer.Api.Application.Interfaces;
+using AmazingBeer.Api.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -34,12 +35,12 @@ namespace AmazingBeer.Api.Presentation.Controllers
             if (!response.Success)
             {
                 if (response.Data is null)
-                    return NotFound(response.Message);
+                    throw new CustomExceptions.NotFoundException(response.Message);
 
-                return BadRequest(response.Message);
+                throw new CustomExceptions.BadRequestException(response.Message);
             }
 
-            return Ok(response.Data);
+            return Ok(response);
         }
 
         /// <summary>
@@ -55,19 +56,19 @@ namespace AmazingBeer.Api.Presentation.Controllers
         public async Task<IActionResult> RetornarCervejaPorIdAsync(Guid id)
         {
             if (id == Guid.Empty)
-                return BadRequest("O Id informado é inválido.");
+                throw new CustomExceptions.BadRequestException("O Id informado é inválido.");
 
             var response = await _cervejaService.RetornarCervejaIdAsync(id);
 
             if (!response.Success)
             {
                 if (response.Data is null)
-                    return NotFound(response.Message);
+                    throw new CustomExceptions.NotFoundException(response.Message);
 
-                return BadRequest(response.Message);
+                throw new CustomExceptions.BadRequestException(response.Message);
             }
 
-            return Ok(response.Data);
+            return Ok(response);
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using AmazingBeer.Api.Application.Dtos.Cerveja;
 using AmazingBeer.Api.Application.Interfaces;
 using AmazingBeer.Api.Application.Responses;
+using AmazingBeer.Api.Domain.Exceptions;
 using AmazingBeer.Api.Domain.Interfaces;
 using AutoMapper;
 using Serilog;
@@ -30,22 +31,20 @@ namespace AmazingBeer.Api.Application.Services
                 // Verifica se a operação foi bem-sucedida e se há dados:
                 if (!cervejasResponse.Success || cervejasResponse.Data is null || !cervejasResponse.Data.Any())
                 {
-                    Log.Warning("SERVICE: NAO foram encontradas cervejas cadastradas no banco de dados.");
-                    return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "NÃO foram encontradas cervejas cadastradas no banco de dados.", data: null);
+                    Log.Warning("NAO foram encontradas cervejas cadastradas no banco de dados.");
+                    throw new CustomExceptions.NotFoundException("NÃO foram encontradas cervejas cadastradas no banco de dados.");
                 }
 
                 // Mapeia os dados para o Dto:
                 var cervejas = _mapper.Map<List<ListarCervejaDto>>(cervejasResponse.Data);
 
                 /// Retorna as cervejas para a Controller:
-                Log.Information($"SERVICE: Cervejas retornadas com sucesso. Total: {cervejas.Count}");
+                Log.Information($"Cervejas retornadas com sucesso. Total: {cervejas.Count}");
                 return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: true, message: "Cervejas retornadas com sucesso.", data: cervejas);
             }
             catch (Exception ex)
             {
-                // Loga o erro com detalhes e retorna uma mensagem genérica:
-                Log.Error($"SERVICE: Erro ao tentar retornar as cervejas: {ex.Message}", ex);
-                return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "Ocorreu um erro ao processar sua solicitação.", data: null);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 
@@ -59,22 +58,20 @@ namespace AmazingBeer.Api.Application.Services
                 // Verifica se a operação foi bem-sucedida e se há dados:
                 if (!cervejaIdResponse.Success || cervejaIdResponse.Data is null)
                 {
-                    Log.Warning($"SERVICE: Cerveja com ID {id} NAO encontrada na base de dados.");
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: "Cerveja NÃO encontrada na base de dados.", data: null);
+                    Log.Warning($"Cerveja com Id: '{id}' NAO encontrada na base de dados.");
+                    throw new CustomExceptions.NotFoundException($"Cerveja com Id: '{id}' NÃO encontrada na base de dados.");
                 }
 
                 // Mapeia os dados para o Dto:
                 var cervejaId = _mapper.Map<ListarCervejaDto>(cervejaIdResponse.Data);
 
                 // Retorna a cerveja para a Controller:
-                Log.Information($"SERVICE: Cerveja com Id: {id} retornada com sucesso.");
+                Log.Information($"Cerveja com Id: '{id}' retornada com sucesso.");
                 return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja retornada com sucesso.", data: cervejaId);
             }
             catch (Exception ex)
             {
-                // Loga o erro com detalhes e retorna uma mensagem genérica:
-                Log.Error($"SERVICE: Erro ao retornar a cerveja com Id: {id}: {ex.Message}", ex);
-                return new ResponseBase<ListarCervejaDto>(success: false, message: "Ocorreu um erro ao processar a solicitação.", data: null);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 

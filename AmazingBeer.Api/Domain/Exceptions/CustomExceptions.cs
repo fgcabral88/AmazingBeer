@@ -8,6 +8,12 @@
             public NotFoundException(string message) : base(message) { }
         }
 
+        // Exceção para erros de requisição
+        public class BadRequestException : Exception
+        {
+            public BadRequestException(string message) : base(message) { }
+        }
+
         // Exceção para erros de validação
         public class ValidationException : Exception
         {
@@ -30,6 +36,29 @@
         public class DatabaseException : Exception
         {
             public DatabaseException(string message) : base(message) { }
+        }
+
+        // Exceção para erros de permissão
+        public class ForbiddenException : Exception
+        {
+            public ForbiddenException(string message) : base(message) { }
+        }
+
+        // Exceção para erros de conflito
+        public class ConflictException : Exception
+        {
+            public ConflictException(string message) : base(message) { }
+        }
+
+        // Exceção para erros de entidade não processável
+        public class UnprocessableEntityException : Exception
+        {
+            public UnprocessableEntityException(string message) : base(message) { }
+        }
+
+        public class InternalServerErrorException : Exception
+        {
+            public InternalServerErrorException(string message) : base(message) { }
         }
     }
 }

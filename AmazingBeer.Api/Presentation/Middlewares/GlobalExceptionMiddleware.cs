@@ -58,6 +58,31 @@ public class GlobalExceptionMiddleware
                 message = databaseException.Message;
                 break;
 
+            case CustomExceptions.ForbiddenException forbiddenException:
+                statusCode = HttpStatusCode.Forbidden;
+                message = forbiddenException.Message;
+                break;
+
+            case CustomExceptions.ConflictException conflictException:
+                statusCode = HttpStatusCode.Conflict;
+                message = conflictException.Message;
+                break;
+
+            case CustomExceptions.BadRequestException badRequestException:
+                statusCode = HttpStatusCode.BadRequest;
+                message = badRequestException.Message;
+                break;
+
+            case CustomExceptions.UnprocessableEntityException unprocessableEntityException:
+                statusCode = HttpStatusCode.UnprocessableEntity;
+                message = unprocessableEntityException.Message;
+                break;
+
+            case CustomExceptions.InternalServerErrorException internalServerErrorException:
+                statusCode = HttpStatusCode.InternalServerError;
+                message = internalServerErrorException.Message;
+                break;
+
             default:
                 statusCode = HttpStatusCode.InternalServerError;
                 message = "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.";
