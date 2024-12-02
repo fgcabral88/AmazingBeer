@@ -132,25 +132,29 @@ namespace AmazingBeer.Api.Application.Services
 
             try
             {
+                // Chamada ao repositório para editar a cerveja:
                 var editarResponse = await _cervejaRepository.EditarCervejaRepositorioAsync(cervejaEditarDto);
 
+                // Verifica o retorno do repositório:
                 if (!editarResponse.Success)
                 {
                     Log.Warning("SERVICE: Erro no retorno do repositório.");
                     return new ResponseBase<ListarCervejaDto>(success: false, message: editarResponse.Message, data: null);
                 }
 
+                // Recupera a cerveja editada:
                 var cervejaEditada = editarResponse.Data?.FirstOrDefault();
 
+                // Verifica se a cerveja foi editada:
                 if(cervejaEditada is null)
                 {
                     Log.Warning("SERVICE: Falha ao recuperar a cerveja recém-editada.");
                     return new ResponseBase<ListarCervejaDto>(success: false, message: "Falha ao recuperar a cerveja recém-editada.", data: null);
                 }
 
+                // Retorna a cerveja para a Controller:
                 Log.Information("SERVICE: Cerveja editada com sucesso.");
                 return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja editada com sucesso.", data: cervejaEditada);
-
             }
             catch (Exception ex)
             {
@@ -160,10 +164,30 @@ namespace AmazingBeer.Api.Application.Services
             }
         }
 
-        public Task<ResponseBase<ListarCervejaDto>> DeletarCervejaAsync(int Id)
+        public async Task<ResponseBase<ListarCervejaDto>> DeletarCervejaAsync(Guid Id)
         {
-            throw new NotImplementedException();
-        }
+            try
+            {
+                // Chamada ao repositório para deletar a cerveja:
+                var deletarResponse = await _cervejaRepository.DeletarCervejaRepositorioAsync(Id);
 
+                // Verifica o retorno do repositório:
+                if (!deletarResponse.Success)
+                {
+                    Log.Warning("SERVICE: Erro no retorno do repositório.");
+                    return new ResponseBase<ListarCervejaDto>(success: false, message: deletarResponse.Message, data: null);
+                }
+
+                // Retorna a cerveja para a Controller:
+                Log.Information("SERVICE: Cerveja deletada com sucesso.");
+                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja deletada com sucesso.", data: null);
+            }
+            catch (Exception ex)
+            {
+                // Loga o erro com detalhes e retorna uma mensagem genérica:
+                Log.Error($"SERVICE: Erro ao deletar cerveja: {ex.Message}", ex);
+                return new ResponseBase<ListarCervejaDto>(success: false, message: "Erro inesperado ao deletar a cerveja.", data: null);
+            }
+        }
     }
 }
