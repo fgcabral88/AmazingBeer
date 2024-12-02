@@ -111,13 +111,6 @@ namespace AmazingBeer.Api.Application.Services
 
         public async Task<ResponseBase<ListarCervejaDto>> EditarCervejaAsync(EditarCervejaDto cervejaEditarDto)
         {
-            // Validação inicial dos dados recebidos:
-            if (cervejaEditarDto is null)
-            {
-                Log.Warning("SERVICE: Os dados da cerveja nao podem ser nulos.");
-                return new ResponseBase<ListarCervejaDto>(success: false, message: "OS dados da cerveja não podem ser nulos.", data: null);
-            }
-
             try
             {
                 // Chamada ao repositório para editar a cerveja:
@@ -126,8 +119,8 @@ namespace AmazingBeer.Api.Application.Services
                 // Verifica o retorno do repositório:
                 if (!editarResponse.Success)
                 {
-                    Log.Warning("SERVICE: Erro no retorno do repositório.");
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: editarResponse.Message, data: null);
+                    Log.Warning("Erro no retorno do repositório.");
+                    throw new CustomExceptions.ValidationException("Erro no retorno do repositório.");
                 }
 
                 // Recupera a cerveja editada:
@@ -136,19 +129,18 @@ namespace AmazingBeer.Api.Application.Services
                 // Verifica se a cerveja foi editada:
                 if(cervejaEditada is null)
                 {
-                    Log.Warning("SERVICE: Falha ao recuperar a cerveja recém-editada.");
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: "Falha ao recuperar a cerveja recém-editada.", data: null);
+                    Log.Warning("Falha ao recuperar a cerveja recém-editada.");
+                    throw new CustomExceptions.ValidationException("Falha ao recuperar a cerveja recém-editada.");
                 }
 
                 // Retorna a cerveja para a Controller:
-                Log.Information("SERVICE: Cerveja editada com sucesso.");
+                Log.Information("Cerveja editada com sucesso.");
                 return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja editada com sucesso.", data: cervejaEditada);
             }
             catch (Exception ex)
             {
-                // Loga o erro com detalhes e retorna uma mensagem genérica:
-                Log.Error($"SERVICE: Erro ao editar cerveja: {ex.Message}", ex);
-                return new ResponseBase<ListarCervejaDto>(success: false, message: "Erro inesperado ao editar a cerveja.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 
@@ -162,19 +154,28 @@ namespace AmazingBeer.Api.Application.Services
                 // Verifica o retorno do repositório:
                 if (!deletarResponse.Success)
                 {
-                    Log.Warning("SERVICE: Erro no retorno do repositório.");
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: deletarResponse.Message, data: null);
+                    Log.Warning("Erro no retorno do repositório.");
+                    throw new CustomExceptions.ValidationException("Erro no retorno do repositório.");
+                }
+
+                // Recupera a cerveja editada:
+                var cervejaDeletada = deletarResponse.Data?.FirstOrDefault();
+
+                // Verifica se a cerveja foi editada:
+                if (cervejaDeletada is null)
+                {
+                    Log.Warning("Falha ao recuperar a cerveja recém-deletada.");
+                    throw new CustomExceptions.ValidationException("Falha ao recuperar a cerveja recém-deletada.");
                 }
 
                 // Retorna a cerveja para a Controller:
-                Log.Information("SERVICE: Cerveja deletada com sucesso.");
-                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja deletada com sucesso.", data: null);
+                Log.Information("Cerveja deletada com sucesso.");
+                return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja deletada com sucesso.", data: cervejaDeletada);
             }
             catch (Exception ex)
             {
-                // Loga o erro com detalhes e retorna uma mensagem genérica:
-                Log.Error($"SERVICE: Erro ao deletar cerveja: {ex.Message}", ex);
-                return new ResponseBase<ListarCervejaDto>(success: false, message: "Erro inesperado ao deletar a cerveja.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
     }
