@@ -77,13 +77,6 @@ namespace AmazingBeer.Api.Application.Services
 
         public async Task<ResponseBase<ListarCervejaDto>> AdicionarCervejaAsync(CriarCervejaDto cervejaCriarDto)
         {
-            // Validação inicial dos dados recebidos:
-            if (cervejaCriarDto is null)
-            {
-                Log.Warning("SERVICE: Os dados da cerveja não podem ser nulos.");
-                return new ResponseBase<ListarCervejaDto>(success: false, message: "OS dados da cerveja não podem ser nulos.", data: null);
-            }
-
             try
             {
                 // Chamada ao repositório para adicionar a cerveja:
@@ -92,8 +85,8 @@ namespace AmazingBeer.Api.Application.Services
                 // Verifica o retorno do repositório:
                 if (!adicionarResponse.Success)
                 {
-                    Log.Warning("SERVICE: Erro no retorno do repositório.");
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: adicionarResponse.Message, data: null);
+                    Log.Warning("Erro no retorno do repositório.");
+                    throw new CustomExceptions.ValidationException("Erro no retorno do repositório.");
                 }
 
                 // Recupera a cerveja adicionada:
@@ -102,19 +95,17 @@ namespace AmazingBeer.Api.Application.Services
                 // Verifica se a cerveja foi adicionada:
                 if (cervejaAdicionada is null)
                 {
-                    Log.Warning("SERVICE: Falha ao recuperar a cerveja recém-cadastrada.");
-                    return new ResponseBase<ListarCervejaDto>(success: false, message: "Falha ao recuperar a cerveja recém-cadastrada.", data: null);
+                    Log.Warning("Falha ao recuperar a cerveja recém-cadastrada.");
+                    throw new CustomExceptions.ValidationException("Falha ao recuperar a cerveja recém-cadastrada.");
                 }
 
                 // Retorna a cerveja para a Controller:
-                Log.Information("SERVICE: Cerveja adicionada com sucesso.");
+                Log.Information("Cerveja adicionada com sucesso.");
                 return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja adicionada com sucesso.", data: cervejaAdicionada);
             }
             catch (Exception ex)
             {
-                // Loga o erro com detalhes e retorna uma mensagem genérica:
-                Log.Error($"SERVICE: Erro ao adicionar cerveja: {ex.Message}", ex);
-                return new ResponseBase<ListarCervejaDto>(success: false, message: "Erro inesperado ao adicionar a cerveja.", data: null);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 

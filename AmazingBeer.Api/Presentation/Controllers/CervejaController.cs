@@ -85,17 +85,12 @@ namespace AmazingBeer.Api.Presentation.Controllers
         [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
         public async Task<IActionResult> AdicionarCervejaAsync([FromBody] CriarCervejaDto criarCervejaDto)
         {
+            if(criarCervejaDto is null)
+                throw new CustomExceptions.BadRequestException("Os dados informados são inválidos.");
+
             var response = await _cervejaService.AdicionarCervejaAsync(criarCervejaDto);
 
-            if (!response.Success)
-            {
-                if (response.Message.Contains("Cerveja já cadastrada.", StringComparison.OrdinalIgnoreCase))
-                    return Conflict(response.Message);
-
-                return BadRequest(response.Message);
-            }
-
-            return Ok(response.Data);
+            return Ok(response);
         }
 
         /// <summary>

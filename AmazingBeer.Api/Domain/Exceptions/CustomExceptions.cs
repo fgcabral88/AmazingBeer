@@ -56,6 +56,7 @@
             public UnprocessableEntityException(string message) : base(message) { }
         }
 
+        // Exceção para erros internos
         public class InternalServerErrorException : Exception
         {
             public InternalServerErrorException(string message) : base(message) { }

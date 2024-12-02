@@ -44,15 +44,13 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
             }
             catch (SqlException ex)
             {
-                // Erro ao acessar o banco de dados:
-                Log.Error($"Erro ao acessar o banco de dados. Detalhes: {ex.Message}", ex);
-                throw new CustomExceptions.DatabaseException("Erro ao acessar o banco de dados.");
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.DatabaseException(ex.Message);
             }
             catch (Exception ex)
             {
-                // Erro inesperado:
-                Log.Error($"Ocorreu um erro inesperado. Tente novamente mais tarde. Detalhes: {ex.Message}", ex);
-                throw new CustomExceptions.InternalServerErrorException("Ocorreu um erro inesperado. Tente novamente mais tarde.");
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 
@@ -81,15 +79,13 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
             }
             catch (SqlException ex)
             {
-                // Erro ao acessar o banco de dados:
-                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados para o Id {id}. Detalhes: {ex.Message}", ex);
-                throw new CustomExceptions.DatabaseException("Erro ao acessar o banco de dados.");
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.DatabaseException(ex.Message);
             }
             catch (Exception ex)
             {
-                // Erro inesperado:
-                Log.Error($"REPOSITORIO: Erro inesperado ao recuperar cerveja com Id {id}. Detalhes: {ex.Message}", ex);
-                throw new CustomExceptions.InternalServerErrorException("Ocorreu um erro inesperado. Tente novamente mais tarde.");
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 
@@ -105,6 +101,17 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 using var conexao = _dbContext.CreateConnection();
                 conexao.Open();
 
+                // Consulta para verificar se a cerveja já existe no banco de dados:
+                const string queryVerificacao = @"SELECT COUNT(1) FROM Cervejas WHERE Nome = @Nome AND Estilo = @Estilo AND FabricanteId = @FabricanteId";
+
+                var existeCerveja = await conexao.ExecuteScalarAsync<int>(queryVerificacao, new { criarCervejaDto.Nome, criarCervejaDto.Estilo, criarCervejaDto.FabricanteId });
+
+                if(existeCerveja > 0)
+                {
+                    Log.Warning("Cerveja ja existe no banco de dados.");
+                    throw new CustomExceptions.ValidationException("Cerveja ja existe no banco de dados.");
+                }
+
                 // Inicia uma transação:
                 using var transacao = conexao.BeginTransaction();
 
@@ -116,8 +123,8 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 {
                     transacao.Rollback();
 
-                    Log.Warning("REPOSITORIO: Nenhuma cerveja foi adicionada ao banco de dados.");
-                    return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Nenhuma cerveja foi adicionada.", data: null);
+                    Log.Warning("Nenhuma cerveja foi adicionada ao banco de dados.");
+                    throw new CustomExceptions.ValidationException("Nenhuma cerveja foi adicionada ao banco de dados.");
                 }
 
                 // Consulta a cerveja recém-inserida:
@@ -126,7 +133,6 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 // Recupera a cerveja no banco de dados:
                 var cervejas = (await conexao.QueryAsync<ListarCervejaDto>(querySelect, new { Id = cervejaId }, transaction: transacao)).ToList();
 
-                // Confirma se a cerveja foi encontrada:
                 transacao.Commit();
 
                 // Retorna a cerveja recuperada para a Service:
@@ -134,15 +140,13 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
             }
             catch (SqlException ex)
             {
-                // Erro ao acessar o banco de dados:
-                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados: {ex.Message}", ex);
-                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro ao acessar o banco de dados.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.DatabaseException(ex.Message);
             }
             catch (Exception ex)
             {
-                // Erro inesperado:
-                Log.Error($"REPOSITORIO: Erro inesperado: {ex.Message}", ex);
-                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro inesperado.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 
