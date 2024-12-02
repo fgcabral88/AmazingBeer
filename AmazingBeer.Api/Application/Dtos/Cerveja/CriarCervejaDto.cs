@@ -28,11 +28,11 @@ namespace AmazingBeer.Api.Application.Dtos.Cerveja
         public required int VolumeML { get; set; }
 
         [JsonRequired]
-        [JsonPropertyName("Identificador do Fabricante")]
+        [JsonPropertyName("Id do Fabricante")]
         public required Guid FabricanteId { get; set; }
 
         [JsonRequired]
-        [JsonPropertyName("Identificador do Usuário")]
+        [JsonPropertyName("Id do Usuário")]
         public required Guid UsuarioId { get; set; } 
     }
 }
