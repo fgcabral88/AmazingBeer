@@ -123,5 +123,33 @@ namespace AmazingBeer.Api.Presentation.Controllers
 
             return Ok(response.Data);
         }
+
+        /// <summary>
+        /// Deleta uma cerveja pelo seu Id cadastrado no banco de dados.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns> Deletar uma cerveja. </returns>
+        [HttpDelete]
+        [Route("DeletarCerveja/{id}")]
+        [SwaggerOperation(Summary = "Deletar uma cerveja.", Description = "Deletar uma cerveja pelo seu Id informado no parâmetro do endpoint.")]
+        [SwaggerResponse(204, "Cerveja deletada com sucesso.", typeof(ListarCervejaDto))]
+        [SwaggerResponse(404, "Nenhuma cerveja encontrada pelo Id informado.")]
+        [SwaggerResponse(400, "Ocorreu um erro durante o processamento.")]
+        [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
+        public async Task<IActionResult> DeletarCervejaAsync(Guid id)
+        {
+            if(id == Guid.Empty)
+                return BadRequest("O Id informado é inválido.");
+
+            var response = await _cervejaService.DeletarCervejaAsync(id);
+
+            if (!response.Success)
+            {
+                if (response.Data is null)
+                    return NotFound(response.Message);
+            }
+
+            return NoContent();
+        }
     }
 }
