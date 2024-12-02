@@ -1,5 +1,6 @@
 ﻿using AmazingBeer.Api.Application.Dtos.Cerveja;
 using AmazingBeer.Api.Application.Interfaces;
+using AmazingBeer.Api.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -34,12 +35,12 @@ namespace AmazingBeer.Api.Presentation.Controllers
             if (!response.Success)
             {
                 if (response.Data is null)
-                    return NotFound(response.Message);
+                    throw new CustomExceptions.NotFoundException(response.Message);
 
-                return BadRequest(response.Message);
+                throw new CustomExceptions.BadRequestException(response.Message);
             }
 
-            return Ok(response.Data);
+            return Ok(response);
         }
 
         /// <summary>
@@ -55,19 +56,19 @@ namespace AmazingBeer.Api.Presentation.Controllers
         public async Task<IActionResult> RetornarCervejaPorIdAsync(Guid id)
         {
             if (id == Guid.Empty)
-                return BadRequest("O Id informado é inválido.");
+                throw new CustomExceptions.BadRequestException("O Id informado é inválido.");
 
             var response = await _cervejaService.RetornarCervejaIdAsync(id);
 
             if (!response.Success)
             {
                 if (response.Data is null)
-                    return NotFound(response.Message);
+                    throw new CustomExceptions.NotFoundException(response.Message);
 
-                return BadRequest(response.Message);
+                throw new CustomExceptions.BadRequestException(response.Message);
             }
 
-            return Ok(response.Data);
+            return Ok(response);
         }
 
         /// <summary>
@@ -84,17 +85,12 @@ namespace AmazingBeer.Api.Presentation.Controllers
         [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
         public async Task<IActionResult> AdicionarCervejaAsync([FromBody] CriarCervejaDto criarCervejaDto)
         {
+            if(criarCervejaDto is null)
+                throw new CustomExceptions.BadRequestException("Os dados informados são inválidos.");
+
             var response = await _cervejaService.AdicionarCervejaAsync(criarCervejaDto);
 
-            if (!response.Success)
-            {
-                if (response.Message.Contains("Cerveja já cadastrada.", StringComparison.OrdinalIgnoreCase))
-                    return Conflict(response.Message);
-
-                return BadRequest(response.Message);
-            }
-
-            return Ok(response.Data);
+            return Ok(response);
         }
 
         /// <summary>
@@ -111,17 +107,12 @@ namespace AmazingBeer.Api.Presentation.Controllers
         [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
         public async Task<IActionResult> EditarCervejaAsync([FromBody] EditarCervejaDto editarCervejaDto)
         {
+            if(editarCervejaDto is null)
+                throw new CustomExceptions.BadRequestException("Os dados informados são inválidos.");
+
             var response = await _cervejaService.EditarCervejaAsync(editarCervejaDto);
 
-            if (!response.Success)
-            {
-                if (response.Data is null)
-                    return NotFound(response.Message);
-
-                return BadRequest(response.Data);
-            }
-
-            return Ok(response.Data);
+            return Ok(response);
         }
 
         /// <summary>
@@ -132,7 +123,7 @@ namespace AmazingBeer.Api.Presentation.Controllers
         [HttpDelete]
         [Route("DeletarCerveja/{id}")]
         [SwaggerOperation(Summary = "Deletar uma cerveja.", Description = "Deletar uma cerveja pelo seu Id informado no parâmetro do endpoint.")]
-        [SwaggerResponse(204, "Cerveja deletada com sucesso.", typeof(ListarCervejaDto))]
+        [SwaggerResponse(200, "Cerveja deletada com sucesso.", typeof(ListarCervejaDto))]
         [SwaggerResponse(404, "Nenhuma cerveja encontrada pelo Id informado.")]
         [SwaggerResponse(400, "Ocorreu um erro durante o processamento.")]
         [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
@@ -143,13 +134,7 @@ namespace AmazingBeer.Api.Presentation.Controllers
 
             var response = await _cervejaService.DeletarCervejaAsync(id);
 
-            if (!response.Success)
-            {
-                if (response.Data is null)
-                    return NotFound(response.Message);
-            }
-
-            return NoContent();
+            return Ok(response);
         }
     }
 }

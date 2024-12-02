@@ -44,7 +44,6 @@
     <Folder Include="Application\Behaviors\Validations\" />
     <Folder Include="Domain\Enums\" />
     <Folder Include="Domain\Events\" />
-    <Folder Include="Domain\Exceptions\" />
     <Folder Include="Domain\ValueObjects\" />
     <Folder Include="Infraestructure\Data\Migrations\" />
     <Folder Include="Infraestructure\Mappers\" />
@@ -52,7 +51,6 @@
     <Folder Include="Infraestructure\Logging\" />
     <Folder Include="Infraestructure\Services\" />
     <Folder Include="Presentation\Filters\" />
-    <Folder Include="Presentation\Middlewares\" />
     <Folder Include="Presentation\Models\" />
   </ItemGroup>
 

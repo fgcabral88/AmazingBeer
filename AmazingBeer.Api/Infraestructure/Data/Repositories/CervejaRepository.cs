@@ -1,5 +1,6 @@
 ﻿using AmazingBeer.Api.Application.Dtos.Cerveja;
 using AmazingBeer.Api.Application.Responses;
+using AmazingBeer.Api.Domain.Exceptions;
 using AmazingBeer.Api.Domain.Interfaces;
 using AmazingBeer.Api.Infraestructure.Data.Context;
 using Dapper;
@@ -35,25 +36,21 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 // Valida se as cervejas foram encontradas:
                 if (!cervejas.Any())
                 {
-                    Log.Warning("REPOSITORIO: NAO foram encontradas cervejas cadastradas no banco de dados.");
                     return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "NÃO foram encontradas cervejas cadastradas no banco de dados.", data: null);
                 }
 
                 // Retorna as cervejas recuperadas para a Service:
-                Log.Information($"REPOSITORIO: Cervejas recuperadas com sucesso. Total: {cervejas.Count()}");
                 return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: true, message: "Cervejas recuperadas com sucesso do banco de dados.", data: cervejas);
             }
             catch (SqlException ex)
             {
-                // Erro ao acessar o banco de dados:
-                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados. Detalhes: {ex.Message}", ex);
-                return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "Erro ao acessar o banco de dados. Tente novamente mais tarde.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.DatabaseException(ex.Message);
             }
             catch (Exception ex)
             {
-                // Erro inesperado:
-                Log.Error($"REPOSITORIO: Erro ao recuperar cervejas do banco de dados: {ex.Message}", ex);
-                return new ResponseBase<IEnumerable<ListarCervejaDto>>(success: false, message: "Ocorreu um erro ao recuperar as cervejas do banco de dados.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 
@@ -74,25 +71,21 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 // Valida se a cerveja foi encontrada:
                 if (cerveja is null)
                 {
-                    Log.Warning($"REPOSITORIO: Cerveja com Id {id} NAO encontrada no banco de dados.");
                     return new ResponseBase<ListarCervejaDto>(success: false, message: $"Cerveja com Id {id} NÃO encontrada no banco de dados.", data: null);
                 }
 
                 // Retorna a cerveja recuperada para a Service:
-                Log.Information($"REPOSITORIO: Cerveja com Id {id} recuperada com sucesso do banco de dados.");
                 return new ResponseBase<ListarCervejaDto>(success: true, message: "Cerveja recuperada com sucesso.", data: cerveja);
             }
             catch (SqlException ex)
             {
-                // Erro ao acessar o banco de dados:
-                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados para o Id {id}. Detalhes: {ex.Message}", ex);
-                return new ResponseBase<ListarCervejaDto>(success: false, message: "Erro ao acessar o banco de dados. Tente novamente mais tarde.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.DatabaseException(ex.Message);
             }
             catch (Exception ex)
             {
-                // Erro inesperado:
-                Log.Error($"REPOSITORIO: Erro inesperado ao recuperar cerveja com Id {id}. Detalhes: {ex.Message}", ex);
-                return new ResponseBase<ListarCervejaDto>(success: false, message: "Ocorreu um erro inesperado. Tente novamente mais tarde.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 
@@ -108,6 +101,17 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 using var conexao = _dbContext.CreateConnection();
                 conexao.Open();
 
+                // Consulta para verificar se a cerveja já existe no banco de dados:
+                const string queryVerificacao = @"SELECT COUNT(1) FROM Cervejas WHERE Nome = @Nome AND Estilo = @Estilo AND FabricanteId = @FabricanteId";
+
+                var existeCerveja = await conexao.ExecuteScalarAsync<int>(queryVerificacao, new { criarCervejaDto.Nome, criarCervejaDto.Estilo, criarCervejaDto.FabricanteId });
+
+                if(existeCerveja > 0)
+                {
+                    Log.Warning("Cerveja ja existe no banco de dados.");
+                    throw new CustomExceptions.ValidationException("Cerveja ja existe no banco de dados.");
+                }
+
                 // Inicia uma transação:
                 using var transacao = conexao.BeginTransaction();
 
@@ -119,8 +123,8 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 {
                     transacao.Rollback();
 
-                    Log.Warning("REPOSITORIO: Nenhuma cerveja foi adicionada ao banco de dados.");
-                    return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Nenhuma cerveja foi adicionada.", data: null);
+                    Log.Warning("Nenhuma cerveja foi adicionada ao banco de dados.");
+                    throw new CustomExceptions.ValidationException("Nenhuma cerveja foi adicionada ao banco de dados.");
                 }
 
                 // Consulta a cerveja recém-inserida:
@@ -129,7 +133,6 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 // Recupera a cerveja no banco de dados:
                 var cervejas = (await conexao.QueryAsync<ListarCervejaDto>(querySelect, new { Id = cervejaId }, transaction: transacao)).ToList();
 
-                // Confirma se a cerveja foi encontrada:
                 transacao.Commit();
 
                 // Retorna a cerveja recuperada para a Service:
@@ -137,15 +140,13 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
             }
             catch (SqlException ex)
             {
-                // Erro ao acessar o banco de dados:
-                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados: {ex.Message}", ex);
-                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro ao acessar o banco de dados.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.DatabaseException(ex.Message);
             }
             catch (Exception ex)
             {
-                // Erro inesperado:
-                Log.Error($"REPOSITORIO: Erro inesperado: {ex.Message}", ex);
-                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro inesperado.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 
@@ -172,25 +173,25 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 {
                     transacao.Rollback();
 
-                    Log.Warning("REPOSITORIO: Nenhuma cerveja foi editada.");
-                    return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Nenhuma cerveja foi editada.", data: null);
+                    Log.Warning("Nenhuma cerveja foi editada.");
+                    throw new CustomExceptions.ValidationException("Nenhuma cerveja foi editada.");
                 }
 
                 // Confirma a transação
                 transacao.Commit();
 
-                Log.Information("REPOSITORIO: Cerveja editada com sucesso.");
+                Log.Information("Cerveja editada com sucesso.");
                 return new ResponseBase<List<ListarCervejaDto>>(success: true, message: "Cerveja editada com sucesso.", data: cervejas.ToList());
             }
             catch (SqlException ex)
             {
-                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados: {ex.Message}", ex);
-                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro ao acessar o banco de dados.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.DatabaseException(ex.Message);
             }
             catch (Exception ex)
             {
-                Log.Error($"REPOSITORIO: Erro inesperado: {ex.Message}", ex);
-                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro inesperado.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
 
@@ -198,8 +199,11 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
         {
             try
             {
+                // Query para recuperar os dados da cerveja antes de deletar:
+                const string querySelect = @"SELECT Id, Nome, Estilo, TeorAlcoolico, Descricao, Preco, VolumeML, FabricanteId, UsuarioId FROM Cervejas WHERE Id = @Id";
+
                 // Query para deletar a cerveja:
-                const string query = "DELETE FROM Cervejas WHERE Id = @Id;";
+                const string queryDelete = "DELETE FROM Cervejas WHERE Id = @Id;";
 
                 // Abre uma conexão com o banco de dados:
                 using var conexao = _dbContext.CreateConnection();
@@ -208,38 +212,94 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
                 // Inicia uma transação:
                 using var transacao = conexao.BeginTransaction();
 
-                // Executa a query de exclusão e retorna a cerveja deletada:
-                var cervejas = await conexao.ExecuteAsync(query, new { Id = id }, transaction: transacao); 
+                // Recupera os dados da cerveja:
+                var cerveja = await conexao.QueryFirstOrDefaultAsync<ListarCervejaDto>(querySelect, new { Id = id }, transaction: transacao);
 
                 // Verifica se a cerveja foi encontrada:
-                if(cervejas == 0)
+                if (cerveja == null)
                 {
                     transacao.Rollback();
 
-                    Log.Warning("REPOSITORIO: Nenhuma cerveja foi deletada.");
-                    return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Nenhuma cerveja foi deletada.", data: null);
+                    Log.Warning("Cerveja não encontrada.");
+                    throw new CustomExceptions.ValidationException("Cerveja não encontrada.");
+                }
+
+                // Executa a query de exclusão:
+                var linhasAfetadas = await conexao.ExecuteAsync(queryDelete, new { Id = id }, transaction: transacao);
+
+                // Valida se a exclusão foi realizada:
+                if (linhasAfetadas == 0)
+                {
+                    transacao.Rollback();
+
+                    Log.Warning("Nenhuma cerveja foi deletada.");
+                    throw new CustomExceptions.ValidationException("Nenhuma cerveja foi deletada.");
                 }
 
                 // Confirma a transação:
                 transacao.Commit();
 
                 // Retorna a cerveja deletada para a Service:
-                Log.Information("REPOSITORIO: Cerveja deletada com sucesso.");
-                return new ResponseBase<List<ListarCervejaDto>>(success: true, message: "Cerveja deletada com sucesso.", data: null);
+                Log.Information("Cerveja deletada com sucesso.");
+                return new ResponseBase<List<ListarCervejaDto>>(success: true, message: "Cerveja deletada com sucesso.", data: new List<ListarCervejaDto> { cerveja });
             }
             catch (SqlException ex)
             {
-                // Erro ao acessar o banco de dados:
-                Log.Error($"REPOSITORIO: Erro ao acessar o banco de dados: {ex.Message}", ex);
-                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro ao acessar o banco de dados.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.DatabaseException(ex.Message);
             }
             catch (Exception ex)
             {
-                // Erro inesperado:
-                Log.Error($"REPOSITORIO: Erro inesperado: {ex.Message}", ex);
-                return new ResponseBase<List<ListarCervejaDto>>(success: false, message: "Erro inesperado.", data: null);
+                Log.Error(ex.Message, ex);
+                throw new CustomExceptions.InternalServerErrorException(ex.Message);
             }
         }
+
+
+        //public async Task<ResponseBase<List<ListarCervejaDto>>> DeletarCervejaRepositorioAsync(Guid id)
+        //{
+        //    try
+        //    {
+        //        // Query para deletar a cerveja:
+        //        const string query = "DELETE FROM Cervejas WHERE Id = @Id;";
+
+        //        // Abre uma conexão com o banco de dados:
+        //        using var conexao = _dbContext.CreateConnection();
+        //        conexao.Open();
+
+        //        // Inicia uma transação:
+        //        using var transacao = conexao.BeginTransaction();
+
+        //        // Executa a query de exclusão e retorna a cerveja deletada:
+        //        var cervejas = await conexao.ExecuteAsync(query, new { Id = id }, transaction: transacao); 
+
+        //        // Verifica se a cerveja foi encontrada:
+        //        if(cervejas == 0)
+        //        {
+        //            transacao.Rollback();
+
+        //            Log.Warning("Nenhuma cerveja foi deletada.");
+        //            throw new CustomExceptions.ValidationException("Nenhuma cerveja foi deletada.");
+        //        }
+
+        //        // Confirma a transação:
+        //        transacao.Commit();
+
+        //        // Retorna a cerveja deletada para a Service:
+        //        Log.Information("Cerveja deletada com sucesso.");
+        //        return new ResponseBase<List<ListarCervejaDto>>(success: true, message: "Cerveja deletada com sucesso.", data: null);
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        Log.Error(ex.Message, ex);
+        //        throw new CustomExceptions.DatabaseException(ex.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Log.Error(ex.Message, ex);
+        //        throw new CustomExceptions.InternalServerErrorException(ex.Message);
+        //    }
+        //}
 
         public void Dispose()
         {
