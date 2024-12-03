@@ -4,6 +4,7 @@ using AmazingBeer.Api.Application.Responses;
 using AmazingBeer.Api.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using static AmazingBeer.Api.Domain.Exceptions.CustomExceptions;
 
 namespace AmazingBeer.Tests.UnitTests.Controllers
 {
@@ -190,6 +191,61 @@ namespace AmazingBeer.Tests.UnitTests.Controllers
 
             Assert.True(erros.ContainsKey("Nome"));
             Assert.Contains("O campo Nome é obrigatório.", ((IEnumerable<string>)erros["Nome"]).Select(e => e.ToString()));
+        }
+
+        [Fact]
+        public async Task EditarCervejaAsync_Sucesso_RetornaResultadoOk()
+        {
+            // Arrange
+            var cervejaEditada = new EditarCervejaDto
+            { 
+                Id = Guid.NewGuid(),
+                Nome = "Cerveja Editada",  
+                Descricao = "Descrição Cerveja Editada",
+                Estilo = "Estilo Cerveja Editada",
+                TeorAlcoolico = 10,
+                Preco = 10,
+                VolumeML = 450,
+                FabricanteId = Guid.NewGuid(),
+                UsuarioId = Guid.NewGuid()
+            };
+
+            var cerveja = new ListarCervejaDto
+            {
+                Id = Guid.NewGuid(),
+                Nome = "Cerveja Teste",
+                Descricao = "Descrição Cerveja Teste",
+                Estilo = "Estilo Cerveja Teste",
+                TeorAlcoolico = 10,
+                Preco = 10,
+                VolumeML = 450,
+                FabricanteId = Guid.NewGuid(),
+                UsuarioId = Guid.NewGuid()
+            };
+
+            var resposta = new ResponseBase<ListarCervejaDto>(cerveja, true, "Cerveja editada com sucesso.");
+
+            _cervejaServiceMock.Setup(s => s.EditarCervejaAsync(cervejaEditada))
+                               .ReturnsAsync(resposta);
+
+            // Act
+            var resultado = await _cervejaController.EditarCervejaAsync(cervejaEditada);
+
+            // Assert
+            var resultadoOk = Assert.IsType<OkObjectResult>(resultado);
+            Assert.Equal(200, resultadoOk.StatusCode);
+            Assert.Equal(resposta, resultadoOk.Value);
+        }
+
+        [Fact]
+        public async Task EditarCervejaAsync_DtoNulo_LançaExceçãoBadRequest()
+        {
+            // Arrange
+            EditarCervejaDto cervejaEditada = null;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<BadRequestException>(() => _cervejaController.EditarCervejaAsync(cervejaEditada));
+            Assert.Equal("Os dados informados são inválidos.", exception.Message);
         }
     }
 }
