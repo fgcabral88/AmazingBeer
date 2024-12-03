@@ -35,9 +35,9 @@ namespace AmazingBeer.Api.Presentation.Controllers
             if (!response.Success)
             {
                 if (response.Data is null)
-                    throw new CustomExceptions.NotFoundException(response.Message);
+                    return NotFound(response.Message);
 
-                throw new CustomExceptions.BadRequestException(response.Message);
+                return BadRequest(response.Message);
             }
 
             return Ok(response);
@@ -56,16 +56,16 @@ namespace AmazingBeer.Api.Presentation.Controllers
         public async Task<IActionResult> RetornarCervejaPorIdAsync(Guid id)
         {
             if (id == Guid.Empty)
-                throw new CustomExceptions.BadRequestException("O Id informado é inválido.");
+                return BadRequest("O Id informado é inválido.");
 
             var response = await _cervejaService.RetornarCervejaIdAsync(id);
 
             if (!response.Success)
             {
                 if (response.Data is null)
-                    throw new CustomExceptions.NotFoundException(response.Message);
+                    return NotFound(response.Message);
 
-                throw new CustomExceptions.BadRequestException(response.Message);
+                return BadRequest(response.Message);
             }
 
             return Ok(response);
@@ -86,16 +86,16 @@ namespace AmazingBeer.Api.Presentation.Controllers
         public async Task<IActionResult> AdicionarCervejaAsync([FromBody] CriarCervejaDto criarCervejaDto)
         {
             if (!ModelState.IsValid)
-                throw new CustomExceptions.BadRequestException(ModelState.ToString() ?? "Os dados informados são inválidos.");
+                return BadRequest(ModelState);
 
             var response = await _cervejaService.AdicionarCervejaAsync(criarCervejaDto);
 
             if (!response.Success)
             {
-                if (response.Data is null)
-                    throw new CustomExceptions.ConflictException(response.Message);
-
-                throw new CustomExceptions.BadRequestException(response.Message);
+                if(response.Data is null)
+                    return NotFound(response.Message);
+                
+                return BadRequest(response.Message);
             }
 
             return Ok(response);

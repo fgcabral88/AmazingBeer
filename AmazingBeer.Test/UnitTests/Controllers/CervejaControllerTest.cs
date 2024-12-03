@@ -4,7 +4,6 @@ using AmazingBeer.Api.Application.Responses;
 using AmazingBeer.Api.Presentation.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using static AmazingBeer.Api.Domain.Exceptions.CustomExceptions;
 
 namespace AmazingBeer.Tests.UnitTests.Controllers
 {
@@ -59,17 +58,20 @@ namespace AmazingBeer.Tests.UnitTests.Controllers
         }
 
         [Fact]
-        public async Task RetornarCervejasAsync_NaoEncontrado_LancaNotFoundException()
+        public async Task RetornarCervejasAsync_NaoEncontrado_RetornaNotFound()
         {
             // Arrange
-            var response = new ResponseBase<IEnumerable<ListarCervejaDto>>(null, false, "Nenhuma cerveja encontrada");
-            
-            _cervejaServiceMock.Setup(s => s.RetornarCervejasAsync())
-                .ReturnsAsync(response);
+            var resposta = new ResponseBase<IEnumerable<ListarCervejaDto>>(null, false, "Nenhuma cerveja encontrada");
 
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<NotFoundException>(() => _cervejaController.RetornarCervejasAsync());
-            Assert.Equal("Nenhuma cerveja encontrada", exception.Message);
+            _cervejaServiceMock.Setup(s => s.RetornarCervejasAsync())
+                .ReturnsAsync(resposta);
+
+            // Act
+            var resultado = await _cervejaController.RetornarCervejasAsync();
+
+            // Assert
+            var resultadoNotFound = Assert.IsType<NotFoundObjectResult>(resultado);
+            Assert.Equal("Nenhuma cerveja encontrada", resultadoNotFound.Value);
         }
 
         [Fact]
@@ -105,14 +107,17 @@ namespace AmazingBeer.Tests.UnitTests.Controllers
         }
 
         [Fact]
-        public async Task RetornarCervejaPorIdAsync_IdInvalido_LancaBadRequestException()
+        public async Task RetornarCervejaPorIdAsync_IdInvalido_RetornaBadRequest()
         {
             // Arrange
             var idInvalido = Guid.Empty;
 
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<BadRequestException>(() => _cervejaController.RetornarCervejaPorIdAsync(idInvalido));
-            Assert.Equal("O Id informado é inválido.", exception.Message);
+            // Act
+            var resultado = await _cervejaController.RetornarCervejaPorIdAsync(idInvalido);
+
+            // Assert
+            var resultadoBadRequest = Assert.IsType<BadRequestObjectResult>(resultado);
+            Assert.Equal("O Id informado é inválido.", resultadoBadRequest.Value);
         }
 
         [Fact]
@@ -156,6 +161,35 @@ namespace AmazingBeer.Tests.UnitTests.Controllers
             var resultadoOk = Assert.IsType<OkObjectResult>(resultado);
             Assert.Equal(200, resultadoOk.StatusCode);
             Assert.Equal(resposta, resultadoOk.Value);
+        }
+
+        [Fact]
+        public async Task AdicionarCervejaAsync_ModeloInvalido_RetornaBadRequest()
+        {
+            // Arrange
+            _cervejaController.ModelState.AddModelError("Nome", "O campo Nome é obrigatório.");
+
+            var cervejaNova = new CriarCervejaDto()
+            {
+                Nome = "",
+                Descricao = "Descrição Cerveja Nova",
+                Estilo = "Estilo Cerveja Nova",
+                TeorAlcoolico = 10,
+                Preco = 10,
+                VolumeML = 450,
+                FabricanteId = Guid.NewGuid(),
+                UsuarioId = Guid.NewGuid()
+            }; 
+
+            // Act
+            var resultado = await _cervejaController.AdicionarCervejaAsync(cervejaNova);
+
+            // Assert
+            var resultadoBadRequest = Assert.IsType<BadRequestObjectResult>(resultado);
+            var erros = Assert.IsType<SerializableError>(resultadoBadRequest.Value);
+
+            Assert.True(erros.ContainsKey("Nome"));
+            Assert.Contains("O campo Nome é obrigatório.", ((IEnumerable<string>)erros["Nome"]).Select(e => e.ToString()));
         }
     }
 }
