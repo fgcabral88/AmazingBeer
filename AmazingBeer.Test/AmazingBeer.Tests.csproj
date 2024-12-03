@@ -29,11 +29,13 @@
 
   <ItemGroup>
     <Folder Include="FunctionalTests\" />
-    <Folder Include="UnitTests\Controllers\" />
-    <Folder Include="UnitTests\" />
     <Folder Include="IntegrationTests\" />
     <Folder Include="UnitTests\Repositories\" />
     <Folder Include="UnitTests\Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AmazingBeer.Api\AmazingBeer.Api.csproj" />
   </ItemGroup>
 
 </Project>
