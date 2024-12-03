@@ -1,18 +1,28 @@
+using AmazingBeer.Api.Application.Behaviors.Validations;
 using AmazingBeer.Api.Application.Interfaces;
 using AmazingBeer.Api.Application.Services;
 using AmazingBeer.Api.Domain.Interfaces;
 using AmazingBeer.Api.Infraestructure.Data.Context;
 using AmazingBeer.Api.Infraestructure.Data.Repositories;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+// Registra seus repositórios e serviços
+builder.Services.AddScoped<ICervejaRepository, CervejaRepository>();
+builder.Services.AddScoped<ICervejaService, CervejaService>();
+
+// Fluent Validation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
 
 // Add services to the container.
-
 builder.Services.AddControllers();
+builder.Services.AddValidatorsFromAssemblyContaining<CriarCervejaDtoValidation>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -34,16 +44,13 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<SqlDbContext>(sp =>
     new SqlDbContext(builder.Configuration.GetConnectionString("DefaultConnection")!));
 
-// Registra seus repositórios e serviços
-builder.Services.AddScoped<ICervejaRepository, CervejaRepository>();
-builder.Services.AddScoped<ICervejaService, CervejaService>();
-
 // Configurar o Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
 
-builder.Host.UseSerilog(); // Usar Serilog
+// Usar Serilog
+builder.Host.UseSerilog(); 
 
 // Adicionar serviços
 builder.Services.AddRazorPages();
