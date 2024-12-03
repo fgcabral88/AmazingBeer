@@ -3,6 +3,7 @@ using AmazingBeer.Api.Application.Interfaces;
 using AmazingBeer.Api.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using static AmazingBeer.Api.Domain.Exceptions.CustomExceptions;
 
 namespace AmazingBeer.Api.Presentation.Controllers
 {
@@ -35,9 +36,9 @@ namespace AmazingBeer.Api.Presentation.Controllers
             if (!response.Success)
             {
                 if (response.Data is null)
-                    throw new CustomExceptions.NotFoundException(response.Message);
+                    return NotFound(response.Message);
 
-                throw new CustomExceptions.BadRequestException(response.Message);
+                return BadRequest(response.Message);
             }
 
             return Ok(response);
@@ -56,16 +57,16 @@ namespace AmazingBeer.Api.Presentation.Controllers
         public async Task<IActionResult> RetornarCervejaPorIdAsync(Guid id)
         {
             if (id == Guid.Empty)
-                throw new CustomExceptions.BadRequestException("O Id informado é inválido.");
+                return BadRequest("O Id informado é inválido.");
 
             var response = await _cervejaService.RetornarCervejaIdAsync(id);
 
             if (!response.Success)
             {
                 if (response.Data is null)
-                    throw new CustomExceptions.NotFoundException(response.Message);
+                    return NotFound(response.Message);
 
-                throw new CustomExceptions.BadRequestException(response.Message);
+                return BadRequest(response.Message);
             }
 
             return Ok(response);
@@ -85,11 +86,18 @@ namespace AmazingBeer.Api.Presentation.Controllers
         [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
         public async Task<IActionResult> AdicionarCervejaAsync([FromBody] CriarCervejaDto criarCervejaDto)
         {
-
             if (!ModelState.IsValid)
-                throw new CustomExceptions.BadRequestException(ModelState.ToString() ?? "Os dados informados são inválidos.");
+                return BadRequest(ModelState);
 
             var response = await _cervejaService.AdicionarCervejaAsync(criarCervejaDto);
+
+            if (!response.Success)
+            {
+                if(response.Data is null)
+                    return NotFound(response.Message);
+                
+                return BadRequest(response.Message);
+            }
 
             return Ok(response);
         }
@@ -108,10 +116,21 @@ namespace AmazingBeer.Api.Presentation.Controllers
         [SwaggerResponse(500, "Erro interno ao processar a solicitação.")]
         public async Task<IActionResult> EditarCervejaAsync([FromBody] EditarCervejaDto editarCervejaDto)
         {
-            if(editarCervejaDto is null)
-                throw new CustomExceptions.BadRequestException("Os dados informados são inválidos.");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (editarCervejaDto is null)
+                throw new BadRequestException("Os dados informados são inválidos.");
 
             var response = await _cervejaService.EditarCervejaAsync(editarCervejaDto);
+
+            if (!response.Success)
+            {
+                if(response.Data is null)
+                    return NotFound(response.Message);
+                
+                return BadRequest(response.Message);
+            }
 
             return Ok(response);
         }
@@ -134,6 +153,14 @@ namespace AmazingBeer.Api.Presentation.Controllers
                 return BadRequest("O Id informado é inválido.");
 
             var response = await _cervejaService.DeletarCervejaAsync(id);
+
+            if(!response.Success)
+            {
+                if(response.Data is null)
+                    return NotFound(response.Message);
+                
+                return BadRequest(response.Message);
+            }
 
             return Ok(response);
         }
