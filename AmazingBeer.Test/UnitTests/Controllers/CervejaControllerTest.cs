@@ -247,5 +247,39 @@ namespace AmazingBeer.Tests.UnitTests.Controllers
             var exception = await Assert.ThrowsAsync<BadRequestException>(() => _cervejaController.EditarCervejaAsync(cervejaEditada));
             Assert.Equal("Os dados informados são inválidos.", exception.Message);
         }
+
+        [Fact]
+        public async Task DeletarCervejaAsync_Sucesso_RetornaResultadoOk()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var resposta = new ResponseBase<ListarCervejaDto>(null, true, "Cerveja deletada com sucesso.");
+
+            _cervejaServiceMock.Setup(s => s.DeletarCervejaAsync(id))
+                               .ReturnsAsync(resposta);
+
+            // Act
+            var resultado = await _cervejaController.DeletarCervejaAsync(id);
+
+            // Assert
+            var resultadoOk = Assert.IsType<OkObjectResult>(resultado);
+            Assert.Equal(200, resultadoOk.StatusCode);
+            Assert.Equal(resposta, resultadoOk.Value);
+        }
+
+        [Fact]
+        public async Task DeletarCervejaAsync_IdInvalido_RetornaBadRequest()
+        {
+            // Arrange
+            var idInvalido = Guid.Empty;
+
+            // Act
+            var resultado = await _cervejaController.DeletarCervejaAsync(idInvalido);
+
+            // Assert
+            var resultadoBadRequest = Assert.IsType<BadRequestObjectResult>(resultado);
+            Assert.Equal(400, resultadoBadRequest.StatusCode);
+            Assert.Equal("O Id informado é inválido.", resultadoBadRequest.Value);
+        }
     }
 }

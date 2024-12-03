@@ -154,6 +154,14 @@ namespace AmazingBeer.Api.Presentation.Controllers
 
             var response = await _cervejaService.DeletarCervejaAsync(id);
 
+            if(!response.Success)
+            {
+                if(response.Data is null)
+                    return NotFound(response.Message);
+                
+                return BadRequest(response.Message);
+            }
+
             return Ok(response);
         }
     }
