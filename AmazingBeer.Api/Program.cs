@@ -58,13 +58,13 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
-    app.UseMiddleware<GlobalExceptionMiddleware>();
 }
 
 // Configure Redoc
