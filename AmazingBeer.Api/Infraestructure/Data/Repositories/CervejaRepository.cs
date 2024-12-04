@@ -255,52 +255,6 @@ namespace AmazingBeer.Api.Infraestructure.Data.Repositories
             }
         }
 
-
-        //public async Task<ResponseBase<List<ListarCervejaDto>>> DeletarCervejaRepositorioAsync(Guid id)
-        //{
-        //    try
-        //    {
-        //        // Query para deletar a cerveja:
-        //        const string query = "DELETE FROM Cervejas WHERE Id = @Id;";
-
-        //        // Abre uma conexão com o banco de dados:
-        //        using var conexao = _dbContext.CreateConnection();
-        //        conexao.Open();
-
-        //        // Inicia uma transação:
-        //        using var transacao = conexao.BeginTransaction();
-
-        //        // Executa a query de exclusão e retorna a cerveja deletada:
-        //        var cervejas = await conexao.ExecuteAsync(query, new { Id = id }, transaction: transacao); 
-
-        //        // Verifica se a cerveja foi encontrada:
-        //        if(cervejas == 0)
-        //        {
-        //            transacao.Rollback();
-
-        //            Log.Warning("Nenhuma cerveja foi deletada.");
-        //            throw new CustomExceptions.ValidationException("Nenhuma cerveja foi deletada.");
-        //        }
-
-        //        // Confirma a transação:
-        //        transacao.Commit();
-
-        //        // Retorna a cerveja deletada para a Service:
-        //        Log.Information("Cerveja deletada com sucesso.");
-        //        return new ResponseBase<List<ListarCervejaDto>>(success: true, message: "Cerveja deletada com sucesso.", data: null);
-        //    }
-        //    catch (SqlException ex)
-        //    {
-        //        Log.Error(ex.Message, ex);
-        //        throw new CustomExceptions.DatabaseException(ex.Message);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Log.Error(ex.Message, ex);
-        //        throw new CustomExceptions.InternalServerErrorException(ex.Message);
-        //    }
-        //}
-
         public void Dispose()
         {
             if (!_disposed)
