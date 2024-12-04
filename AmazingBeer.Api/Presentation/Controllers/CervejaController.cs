@@ -1,6 +1,5 @@
 ﻿using AmazingBeer.Api.Application.Dtos.Cerveja;
 using AmazingBeer.Api.Application.Interfaces;
-using AmazingBeer.Api.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using static AmazingBeer.Api.Domain.Exceptions.CustomExceptions;

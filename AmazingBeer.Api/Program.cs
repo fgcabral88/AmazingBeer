@@ -67,6 +67,14 @@ if (app.Environment.IsDevelopment())
     app.UseMiddleware<GlobalExceptionMiddleware>();
 }
 
+// Configure Redoc
+app.UseReDoc(options =>
+{
+    options.DocumentTitle = "Amazing Beer - Redoc";
+    options.SpecUrl = "/swagger/v1/swagger.json"; 
+    options.RoutePrefix = "redoc";               
+});
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
