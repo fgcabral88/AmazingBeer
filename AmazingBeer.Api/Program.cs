@@ -4,6 +4,7 @@ using AmazingBeer.Api.Application.Services;
 using AmazingBeer.Api.Domain.Interfaces;
 using AmazingBeer.Api.Infraestructure.Data.Context;
 using AmazingBeer.Api.Infraestructure.Data.Repositories;
+using AmazingBeer.Api.Infraestructure.Mappers;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.OpenApi.Models;
@@ -38,7 +39,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Registrando o AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(typeof(CervejaProfile));
 
 // Adiciona a string de conexão ao contêiner de serviços
 builder.Services.AddScoped<SqlDbContext>(sp =>
@@ -58,13 +59,13 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
-    app.UseMiddleware<GlobalExceptionMiddleware>();
 }
 
 // Configure Redoc
