@@ -1,6 +1,5 @@
 using AmazingBeer.Api.Infraestructure.Data.Context;
 using AmazingBeer.Api.Infraestructure.IoC;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,17 +8,6 @@ builder.AddServiceDefaults();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Amazing Beer",
-        Version = "v1",
-        Description = "Amazing Beer - Aspire 8",
-    });
-
-    options.EnableAnnotations();
-});
 
 // Registrar dependências IoC
 builder.Services.AdicionarDependencias();

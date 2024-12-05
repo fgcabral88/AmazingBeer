@@ -6,6 +6,7 @@ using AmazingBeer.Api.Infraestructure.Data.Repositories;
 using AmazingBeer.Api.Infraestructure.Mappers;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 namespace AmazingBeer.Api.Infraestructure.IoC
@@ -40,6 +41,19 @@ namespace AmazingBeer.Api.Infraestructure.IoC
                 .ReadFrom.Configuration(configuration: services.BuildServiceProvider()
                 .GetService<IConfiguration>() ?? new ConfigurationBuilder().Build())
                 .CreateLogger();
+
+            // Swagger
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Amazing Beer",
+                    Version = "v1",
+                    Description = "Amazing Beer - Aspire",
+                });
+
+                options.EnableAnnotations();
+            });
 
             #endregion
 
